@@ -2,6 +2,9 @@ package rabbit
 
 // Message format to share between sender and consumer
 type Message struct {
-	Message string
-	Store   string
+	ID          int32
+	ExternalID  string
+	Destination string
+	Message     string
+	Store       string
 }

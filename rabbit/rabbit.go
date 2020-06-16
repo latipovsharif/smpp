@@ -55,7 +55,7 @@ func NewSession() (*Session, error) {
 }
 
 // Consume start consuming from SMSChannel
-func (s *Session) Consume() {
+func (s *Session) Consume(c chan<- Message) {
 	msgs, err := s.channel.Consume(
 		s.queue.Name, // queue
 		SMSConsumer,  // consumer
@@ -71,17 +71,19 @@ func (s *Session) Consume() {
 	}
 
 	for d := range msgs {
-		message := &Message{}
-		if err := json.Unmarshal(d.Body, message); err != nil {
+		message := Message{}
+		if err := json.Unmarshal(d.Body, &message); err != nil {
 			fmt.Println(err)
 			if err := d.Nack(false, true); err != nil {
 				log.Fatalf("cannot nack message")
 			}
 		}
-		fmt.Println(message.Message)
+
 		if err := d.Ack(false); err != nil {
 			log.Fatalf("cannot ack message")
 		}
+
+		c <- message
 	}
 	<-s.done
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/go-pg/pg/v9"
 	"github.com/pkg/errors"
 	"github.com/streadway/amqp"
 )
@@ -21,10 +22,11 @@ type Session struct {
 	queue      amqp.Queue
 	channel    *amqp.Channel
 	done       chan bool
+	db         *pg.DB
 }
 
 // NewSession return new rabbitmq session
-func NewSession() (*Session, error) {
+func NewSession(db *pg.DB) (*Session, error) {
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot connect to rabbitmq")
@@ -49,6 +51,7 @@ func NewSession() (*Session, error) {
 		channel:    ch,
 		queue:      q,
 		done:       make(chan bool),
+		db:         db,
 	}
 
 	return s, nil
@@ -77,6 +80,13 @@ func (s *Session) Consume(c chan<- Message) {
 			if err := d.Nack(false, true); err != nil {
 				log.Fatalf("cannot nack message")
 			}
+		}
+
+		message.State = StateNew
+
+		if _, err := s.db.Model(&message).Insert(); err != nil {
+			log.Fatalf(err.Error())
+			d.Nack(false, true)
 		}
 
 		if err := d.Ack(false); err != nil {

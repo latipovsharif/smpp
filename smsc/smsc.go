@@ -7,6 +7,7 @@ import (
 	"smpp/rabbit"
 	"time"
 
+	"github.com/go-pg/pg/v9"
 	"github.com/linxGnu/gosmpp"
 	"github.com/linxGnu/gosmpp/data"
 	"github.com/linxGnu/gosmpp/pdu"
@@ -16,10 +17,11 @@ import (
 type Session struct {
 	trans *gosmpp.TransceiverSession
 	c     chan *pdu.SubmitSM
+	db    *pg.DB
 }
 
 // NewSession returns new session object
-func NewSession() *Session {
+func NewSession(db *pg.DB) *Session {
 	auth := gosmpp.Auth{
 		SMSC:       os.Getenv("SMSC_HOST"),     // "127.0.0.1:2775",
 		SystemID:   os.Getenv("SMSC_LOGIN"),    // "522241",
@@ -42,7 +44,7 @@ func NewSession() *Session {
 			fmt.Println(err)
 		},
 
-		OnPDU: handlePDU(),
+		OnPDU: handlePDU(db),
 
 		OnClosed: func(state gosmpp.State) {
 			fmt.Println(state)
@@ -55,6 +57,7 @@ func NewSession() *Session {
 	return &Session{
 		trans: trans,
 		c:     make(chan *pdu.SubmitSM),
+		db:    db,
 	}
 }
 
@@ -67,35 +70,24 @@ func (s *Session) SendAndReceiveSMS() {
 	}
 }
 
-func handlePDU() func(pdu.PDU, bool) {
+func handlePDU(db *pg.DB) func(pdu.PDU, bool) {
 	return func(p pdu.PDU, responded bool) {
 		switch pd := p.(type) {
 		case *pdu.SubmitSMResp:
-			fmt.Printf("SubmitSMResp:%+v\n", pd)
-			fmt.Printf("SubmitSMResp:%+v sequence number \n", pd.GetSequenceNumber())
-			fmt.Printf("SubmitSMResp:%+v sequence number \n", pd.MessageID)
-
+			if _, err := db.Model((*rabbit.Message)(nil)).
+				Set("smsc_message_id = ?, state = ?, last_updated_date = ?", pd.MessageID, rabbit.StateDelivered, time.Now()).
+				Where("id = ?", pd.GetSequenceNumber()).Update(); err != nil {
+				fmt.Println(err)
+			}
 		case *pdu.GenerickNack:
 			fmt.Printf("SubmitSMResp:%+v sequence number \n", pd.GetSequenceNumber())
 			fmt.Println("GenericNack Received")
-
 		case *pdu.EnquireLinkResp:
 			fmt.Println("EnquireLinkResp Received")
-
 		case *pdu.DataSM:
 			fmt.Printf("DataSM:%+v\n", pd)
-
 		case *pdu.DeliverSM:
-			fmt.Print("how many times i were here ?")
-			// fmt.Println(pd)
-			// fmt.Println(p)
-			// fmt.Println("============")
-			// fmt.Println(pd.GetHeader().SequenceNumber)
-			// fmt.Println(pd.GetResponse())
-			// fmt.Printf("DeliverSM:%+v\n", pd)
-			// fmt.Println(pd.Message.GetMessage())
 			fmt.Printf("DeliverSM:%+v\n", pd)
-			// fmt.Println("============")
 		case *pdu.QuerySM:
 			fmt.Println("QuerySM")
 			fmt.Println(pd)
@@ -115,12 +107,12 @@ func (s *Session) SubmitSM(c <-chan rabbit.Message) {
 		srcAddr := pdu.NewAddress()
 		srcAddr.SetTon(5)
 		srcAddr.SetNpi(0)
-		_ = srcAddr.SetAddress(m.Store)
+		_ = srcAddr.SetAddress(m.Src)
 
 		destAddr := pdu.NewAddress()
 		destAddr.SetTon(1)
 		destAddr.SetNpi(1)
-		_ = destAddr.SetAddress(m.Destination)
+		_ = destAddr.SetAddress(m.Dst)
 
 		submitSM := pdu.NewSubmitSM().(*pdu.SubmitSM)
 		submitSM.SourceAddr = srcAddr

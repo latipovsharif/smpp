@@ -1,11 +1,11 @@
 package smsc
 
 import (
-	"fmt"
-	"log"
 	"os"
 	"smpp/rabbit"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/go-pg/pg/v9"
 	"github.com/linxGnu/gosmpp"
@@ -30,24 +30,24 @@ func NewSession(db *pg.DB) *Session {
 	}
 
 	trans, err := gosmpp.NewTransceiverSession(gosmpp.NonTLSDialer, auth, gosmpp.TransceiveSettings{
-		EnquireLink: 5 * time.Second,
+		// EnquireLink: 5 * time.Second,
 
 		OnSubmitError: func(p pdu.PDU, err error) {
-			log.Fatal(err)
+			log.Errorf("OnSubmitError: %v", err)
 		},
 
 		OnReceivingError: func(err error) {
-			fmt.Println(err)
+			log.Errorf("OnReceivingError: %v", err)
 		},
 
 		OnRebindingError: func(err error) {
-			fmt.Println(err)
+			log.Errorf("OnRebindingError: %v", err)
 		},
 
 		OnPDU: handlePDU(db),
 
 		OnClosed: func(state gosmpp.State) {
-			fmt.Println(state)
+			log.Errorf("OnClosed: %v", state)
 		},
 	}, 5*time.Second)
 	if err != nil {
@@ -65,7 +65,7 @@ func NewSession(db *pg.DB) *Session {
 func (s *Session) SendAndReceiveSMS() {
 	for n := range s.c {
 		if err := s.trans.Transceiver().Submit(n); err != nil {
-			fmt.Println(err)
+			log.Errorf("cannot submit message: %v", err)
 		}
 	}
 }
@@ -77,26 +77,26 @@ func handlePDU(db *pg.DB) func(pdu.PDU, bool) {
 			if _, err := db.Model((*rabbit.Message)(nil)).
 				Set("smsc_message_id = ?, state = ?, last_updated_date = ?", pd.MessageID, rabbit.StateDelivered, time.Now()).
 				Where("id = ?", pd.GetSequenceNumber()).Update(); err != nil {
-				fmt.Println(err)
+				log.Errorf("cannot update message: %v", err)
 			}
 		case *pdu.GenerickNack:
-			fmt.Printf("SubmitSMResp:%+v sequence number \n", pd.GetSequenceNumber())
-			fmt.Println("GenericNack Received")
+			log.Infof("SubmitSMResp:%+v sequence number \n", pd.GetSequenceNumber())
+			log.Info("GenericNack Received")
 		case *pdu.EnquireLinkResp:
-			fmt.Println("EnquireLinkResp Received")
+			log.Info("EnquireLinkResp Received")
 		case *pdu.DataSM:
-			fmt.Printf("DataSM:%+v\n", pd)
+			log.Infof("DataSM:%+v\n", pd)
 		case *pdu.DeliverSM:
-			fmt.Printf("DeliverSM:%+v\n", pd)
+			log.Infof("DeliverSM:%+v\n", pd)
 		case *pdu.QuerySM:
-			fmt.Println("QuerySM")
-			fmt.Println(pd)
+			log.Info("QuerySM")
+			log.Info(pd)
 		case *pdu.QuerySMResp:
-			fmt.Println("QuerySMResp")
-			fmt.Println(pd)
+			log.Info("QuerySMResp")
+			log.Info(pd)
 		default:
-			fmt.Println("Default ")
-			fmt.Println(pd)
+			log.Info("Default ")
+			log.Info(pd)
 		}
 	}
 }

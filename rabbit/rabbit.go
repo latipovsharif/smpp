@@ -2,8 +2,8 @@ package rabbit
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/go-pg/pg/v9"
 	"github.com/pkg/errors"
@@ -76,21 +76,21 @@ func (s *Session) Consume(c chan<- Message) {
 	for d := range msgs {
 		message := Message{}
 		if err := json.Unmarshal(d.Body, &message); err != nil {
-			fmt.Println(err)
+			log.Errorf("cannot unmarshal message: %v", err)
 			if err := d.Nack(false, true); err != nil {
-				log.Fatalf("cannot nack message")
+				log.Errorf("cannot nack message: %v", err)
 			}
 		}
 
 		message.State = StateNew
 
 		if _, err := s.db.Model(&message).Insert(); err != nil {
-			log.Fatalf(err.Error())
+			log.Errorf("cannot insert message: %v", err)
 			d.Nack(false, true)
 		}
 
 		if err := d.Ack(false); err != nil {
-			log.Fatalf("cannot ack message")
+			log.Error("cannot ack message")
 		}
 
 		c <- message

@@ -21,12 +21,12 @@ func (Messages) Fields() []ent.Field {
 			Default(uuid.New).
 			Unique(),
 		field.Int32("sequence_number").Positive(),
-		field.String("external_id").Optional(),
-		field.String("dst").Optional(),
-		field.String("message").Unique(),
-		field.String("src").Unique(),
-		field.Int32("state").Optional(),
-		field.Int32("smsc_message_id").Optional(),
+		field.String("external_id"),
+		field.String("dst"),
+		field.String("message"),
+		field.String("src"),
+		field.Int32("state"),
+		field.Int32("smsc_message_id"),
 		field.Time("create_at").Default(time.Now),
 		field.Time("update_at").Default(time.Now),
 	}

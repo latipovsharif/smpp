@@ -1,0 +1,38 @@
+package schema
+
+import (
+	"time"
+
+	"github.com/facebook/ent"
+	"github.com/facebook/ent/schema/edge"
+	"github.com/facebook/ent/schema/field"
+	"github.com/google/uuid"
+)
+
+// RatePrice holds the schema definition for the RatePrice entity.
+type RatePrice struct {
+	ent.Schema
+}
+
+// Fields of the RatePrice.
+func (RatePrice) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).
+			Default(uuid.New).
+			Unique(),
+		field.Time("create_at").Default(time.Now),
+		field.Time("update_at").Default(time.Now),
+	}
+}
+
+// Edges of the RatePrice.
+func (RatePrice) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.From("id_rate", Rate.Type).
+			Ref("rate_id").
+			Unique(),
+		edge.From("id_price", Price.Type).
+			Ref("price_id").
+			Unique(),
+	}
+}

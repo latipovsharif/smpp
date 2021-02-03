@@ -1,16 +1,36 @@
 package main
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
+	"smpp/ent"
 	"smpp/rabbit"
 	"smpp/smsc"
 
 	"github.com/go-pg/pg/v9"
 	"gopkg.in/natefinch/lumberjack.v2"
+
+	"github.com/facebook/ent/dialect"
+	entsql "github.com/facebook/ent/dialect/sql"
+	_ "github.com/jackc/pgx/v4/stdlib"
 )
+
+// Open new connection
+func Open(dbURL string) *ent.Client {
+	db, err := sql.Open("pgx", dbURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Create an ent.Driver from `db`.
+	drv := entsql.OpenDB(dialect.Postgres, db)
+	x0 := ent.NewClient(ent.Driver(drv))
+	return x0
+}
 
 var db *pg.DB
 var messages chan rabbit.Message
@@ -29,6 +49,15 @@ func main() {
 	}
 	log.SetOutput(lumberjackLogRotate)
 
+	client := Open("postgresql://postgres:123@127.0.0.1/testdb")
+	
+	// Your code. For example:
+	ctx := context.Background()
+	if err := client.Schema.Create(ctx); err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+	
 	db = pg.Connect(&pg.Options{
 		Addr:     "localhost:5432",
 		Database: "messages",

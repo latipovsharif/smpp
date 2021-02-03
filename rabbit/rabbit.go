@@ -2,6 +2,7 @@ package rabbit
 
 import (
 	"encoding/json"
+	"fmt"
 
 	log "github.com/sirupsen/logrus"
 
@@ -83,6 +84,7 @@ func (s *Session) Consume(c chan<- Message) {
 		}
 
 		message.State = StateNew
+		fmt.Println(message)
 
 		if _, err := s.db.Model(&message).Insert(); err != nil {
 			log.Errorf("cannot insert message: %v", err)

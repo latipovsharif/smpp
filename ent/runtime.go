@@ -22,10 +22,6 @@ import (
 func init() {
 	messagesFields := schema.Messages{}.Fields()
 	_ = messagesFields
-	// messagesDescSequenceNumber is the schema descriptor for sequence_number field.
-	messagesDescSequenceNumber := messagesFields[1].Descriptor()
-	// messages.SequenceNumberValidator is a validator for the "sequence_number" field. It is called by the builders before save.
-	messages.SequenceNumberValidator = messagesDescSequenceNumber.Validators[0].(func(int32) error)
 	// messagesDescCreateAt is the schema descriptor for create_at field.
 	messagesDescCreateAt := messagesFields[8].Descriptor()
 	// messages.DefaultCreateAt holds the default value on creation for the create_at field.
@@ -40,14 +36,6 @@ func init() {
 	messages.DefaultID = messagesDescID.Default.(func() uuid.UUID)
 	priceFields := schema.Price{}.Fields()
 	_ = priceFields
-	// priceDescMin is the schema descriptor for min field.
-	priceDescMin := priceFields[1].Descriptor()
-	// price.MinValidator is a validator for the "min" field. It is called by the builders before save.
-	price.MinValidator = priceDescMin.Validators[0].(func(int32) error)
-	// priceDescMax is the schema descriptor for max field.
-	priceDescMax := priceFields[2].Descriptor()
-	// price.MaxValidator is a validator for the "max" field. It is called by the builders before save.
-	price.MaxValidator = priceDescMax.Validators[0].(func(int32) error)
 	// priceDescCreateAt is the schema descriptor for create_at field.
 	priceDescCreateAt := priceFields[4].Descriptor()
 	// price.DefaultCreateAt holds the default value on creation for the create_at field.

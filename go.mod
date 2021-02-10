@@ -3,6 +3,7 @@ module smpp
 go 1.14
 
 require (
+	entgo.io/ent v0.6.0 // indirect
 	github.com/facebook/ent v0.5.4
 	github.com/go-pg/pg/v9 v9.2.0
 	github.com/golang/protobuf v1.4.3 // indirect

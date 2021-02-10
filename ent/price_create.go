@@ -160,18 +160,8 @@ func (pc *PriceCreate) check() error {
 	if _, ok := pc.mutation.Min(); !ok {
 		return &ValidationError{Name: "min", err: errors.New("ent: missing required field \"min\"")}
 	}
-	if v, ok := pc.mutation.Min(); ok {
-		if err := price.MinValidator(v); err != nil {
-			return &ValidationError{Name: "min", err: fmt.Errorf("ent: validator failed for field \"min\": %w", err)}
-		}
-	}
 	if _, ok := pc.mutation.Max(); !ok {
 		return &ValidationError{Name: "max", err: errors.New("ent: missing required field \"max\"")}
-	}
-	if v, ok := pc.mutation.Max(); ok {
-		if err := price.MaxValidator(v); err != nil {
-			return &ValidationError{Name: "max", err: fmt.Errorf("ent: validator failed for field \"max\": %w", err)}
-		}
 	}
 	if _, ok := pc.mutation.Price(); !ok {
 		return &ValidationError{Name: "price", err: errors.New("ent: missing required field \"price\"")}

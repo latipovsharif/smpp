@@ -49,37 +49,9 @@ func (mu *MessagesUpdate) SetExternalID(s string) *MessagesUpdate {
 	return mu
 }
 
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (mu *MessagesUpdate) SetNillableExternalID(s *string) *MessagesUpdate {
-	if s != nil {
-		mu.SetExternalID(*s)
-	}
-	return mu
-}
-
-// ClearExternalID clears the value of the "external_id" field.
-func (mu *MessagesUpdate) ClearExternalID() *MessagesUpdate {
-	mu.mutation.ClearExternalID()
-	return mu
-}
-
 // SetDst sets the "dst" field.
 func (mu *MessagesUpdate) SetDst(s string) *MessagesUpdate {
 	mu.mutation.SetDst(s)
-	return mu
-}
-
-// SetNillableDst sets the "dst" field if the given value is not nil.
-func (mu *MessagesUpdate) SetNillableDst(s *string) *MessagesUpdate {
-	if s != nil {
-		mu.SetDst(*s)
-	}
-	return mu
-}
-
-// ClearDst clears the value of the "dst" field.
-func (mu *MessagesUpdate) ClearDst() *MessagesUpdate {
-	mu.mutation.ClearDst()
 	return mu
 }
 
@@ -102,23 +74,9 @@ func (mu *MessagesUpdate) SetState(i int32) *MessagesUpdate {
 	return mu
 }
 
-// SetNillableState sets the "state" field if the given value is not nil.
-func (mu *MessagesUpdate) SetNillableState(i *int32) *MessagesUpdate {
-	if i != nil {
-		mu.SetState(*i)
-	}
-	return mu
-}
-
 // AddState adds i to the "state" field.
 func (mu *MessagesUpdate) AddState(i int32) *MessagesUpdate {
 	mu.mutation.AddState(i)
-	return mu
-}
-
-// ClearState clears the value of the "state" field.
-func (mu *MessagesUpdate) ClearState() *MessagesUpdate {
-	mu.mutation.ClearState()
 	return mu
 }
 
@@ -129,23 +87,9 @@ func (mu *MessagesUpdate) SetSmscMessageID(i int32) *MessagesUpdate {
 	return mu
 }
 
-// SetNillableSmscMessageID sets the "smsc_message_id" field if the given value is not nil.
-func (mu *MessagesUpdate) SetNillableSmscMessageID(i *int32) *MessagesUpdate {
-	if i != nil {
-		mu.SetSmscMessageID(*i)
-	}
-	return mu
-}
-
 // AddSmscMessageID adds i to the "smsc_message_id" field.
 func (mu *MessagesUpdate) AddSmscMessageID(i int32) *MessagesUpdate {
 	mu.mutation.AddSmscMessageID(i)
-	return mu
-}
-
-// ClearSmscMessageID clears the value of the "smsc_message_id" field.
-func (mu *MessagesUpdate) ClearSmscMessageID() *MessagesUpdate {
-	mu.mutation.ClearSmscMessageID()
 	return mu
 }
 
@@ -239,18 +183,12 @@ func (mu *MessagesUpdate) Save(ctx context.Context) (int, error) {
 		affected int
 	)
 	if len(mu.hooks) == 0 {
-		if err = mu.check(); err != nil {
-			return 0, err
-		}
 		affected, err = mu.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*MessagesMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = mu.check(); err != nil {
-				return 0, err
 			}
 			mu.mutation = mutation
 			affected, err = mu.sqlSave(ctx)
@@ -287,16 +225,6 @@ func (mu *MessagesUpdate) ExecX(ctx context.Context) {
 	if err := mu.Exec(ctx); err != nil {
 		panic(err)
 	}
-}
-
-// check runs all checks and user-defined validators on the builder.
-func (mu *MessagesUpdate) check() error {
-	if v, ok := mu.mutation.SequenceNumber(); ok {
-		if err := messages.SequenceNumberValidator(v); err != nil {
-			return &ValidationError{Name: "sequence_number", err: fmt.Errorf("ent: validator failed for field \"sequence_number\": %w", err)}
-		}
-	}
-	return nil
 }
 
 func (mu *MessagesUpdate) sqlSave(ctx context.Context) (n int, err error) {
@@ -338,22 +266,10 @@ func (mu *MessagesUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: messages.FieldExternalID,
 		})
 	}
-	if mu.mutation.ExternalIDCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: messages.FieldExternalID,
-		})
-	}
 	if value, ok := mu.mutation.Dst(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: messages.FieldDst,
-		})
-	}
-	if mu.mutation.DstCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
 			Column: messages.FieldDst,
 		})
 	}
@@ -385,12 +301,6 @@ func (mu *MessagesUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: messages.FieldState,
 		})
 	}
-	if mu.mutation.StateCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
-			Column: messages.FieldState,
-		})
-	}
 	if value, ok := mu.mutation.SmscMessageID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt32,
@@ -402,12 +312,6 @@ func (mu *MessagesUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt32,
 			Value:  value,
-			Column: messages.FieldSmscMessageID,
-		})
-	}
-	if mu.mutation.SmscMessageIDCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
 			Column: messages.FieldSmscMessageID,
 		})
 	}
@@ -532,37 +436,9 @@ func (muo *MessagesUpdateOne) SetExternalID(s string) *MessagesUpdateOne {
 	return muo
 }
 
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (muo *MessagesUpdateOne) SetNillableExternalID(s *string) *MessagesUpdateOne {
-	if s != nil {
-		muo.SetExternalID(*s)
-	}
-	return muo
-}
-
-// ClearExternalID clears the value of the "external_id" field.
-func (muo *MessagesUpdateOne) ClearExternalID() *MessagesUpdateOne {
-	muo.mutation.ClearExternalID()
-	return muo
-}
-
 // SetDst sets the "dst" field.
 func (muo *MessagesUpdateOne) SetDst(s string) *MessagesUpdateOne {
 	muo.mutation.SetDst(s)
-	return muo
-}
-
-// SetNillableDst sets the "dst" field if the given value is not nil.
-func (muo *MessagesUpdateOne) SetNillableDst(s *string) *MessagesUpdateOne {
-	if s != nil {
-		muo.SetDst(*s)
-	}
-	return muo
-}
-
-// ClearDst clears the value of the "dst" field.
-func (muo *MessagesUpdateOne) ClearDst() *MessagesUpdateOne {
-	muo.mutation.ClearDst()
 	return muo
 }
 
@@ -585,23 +461,9 @@ func (muo *MessagesUpdateOne) SetState(i int32) *MessagesUpdateOne {
 	return muo
 }
 
-// SetNillableState sets the "state" field if the given value is not nil.
-func (muo *MessagesUpdateOne) SetNillableState(i *int32) *MessagesUpdateOne {
-	if i != nil {
-		muo.SetState(*i)
-	}
-	return muo
-}
-
 // AddState adds i to the "state" field.
 func (muo *MessagesUpdateOne) AddState(i int32) *MessagesUpdateOne {
 	muo.mutation.AddState(i)
-	return muo
-}
-
-// ClearState clears the value of the "state" field.
-func (muo *MessagesUpdateOne) ClearState() *MessagesUpdateOne {
-	muo.mutation.ClearState()
 	return muo
 }
 
@@ -612,23 +474,9 @@ func (muo *MessagesUpdateOne) SetSmscMessageID(i int32) *MessagesUpdateOne {
 	return muo
 }
 
-// SetNillableSmscMessageID sets the "smsc_message_id" field if the given value is not nil.
-func (muo *MessagesUpdateOne) SetNillableSmscMessageID(i *int32) *MessagesUpdateOne {
-	if i != nil {
-		muo.SetSmscMessageID(*i)
-	}
-	return muo
-}
-
 // AddSmscMessageID adds i to the "smsc_message_id" field.
 func (muo *MessagesUpdateOne) AddSmscMessageID(i int32) *MessagesUpdateOne {
 	muo.mutation.AddSmscMessageID(i)
-	return muo
-}
-
-// ClearSmscMessageID clears the value of the "smsc_message_id" field.
-func (muo *MessagesUpdateOne) ClearSmscMessageID() *MessagesUpdateOne {
-	muo.mutation.ClearSmscMessageID()
 	return muo
 }
 
@@ -722,18 +570,12 @@ func (muo *MessagesUpdateOne) Save(ctx context.Context) (*Messages, error) {
 		node *Messages
 	)
 	if len(muo.hooks) == 0 {
-		if err = muo.check(); err != nil {
-			return nil, err
-		}
 		node, err = muo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*MessagesMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = muo.check(); err != nil {
-				return nil, err
 			}
 			muo.mutation = mutation
 			node, err = muo.sqlSave(ctx)
@@ -770,16 +612,6 @@ func (muo *MessagesUpdateOne) ExecX(ctx context.Context) {
 	if err := muo.Exec(ctx); err != nil {
 		panic(err)
 	}
-}
-
-// check runs all checks and user-defined validators on the builder.
-func (muo *MessagesUpdateOne) check() error {
-	if v, ok := muo.mutation.SequenceNumber(); ok {
-		if err := messages.SequenceNumberValidator(v); err != nil {
-			return &ValidationError{Name: "sequence_number", err: fmt.Errorf("ent: validator failed for field \"sequence_number\": %w", err)}
-		}
-	}
-	return nil
 }
 
 func (muo *MessagesUpdateOne) sqlSave(ctx context.Context) (_node *Messages, err error) {
@@ -819,22 +651,10 @@ func (muo *MessagesUpdateOne) sqlSave(ctx context.Context) (_node *Messages, err
 			Column: messages.FieldExternalID,
 		})
 	}
-	if muo.mutation.ExternalIDCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: messages.FieldExternalID,
-		})
-	}
 	if value, ok := muo.mutation.Dst(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: messages.FieldDst,
-		})
-	}
-	if muo.mutation.DstCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
 			Column: messages.FieldDst,
 		})
 	}
@@ -866,12 +686,6 @@ func (muo *MessagesUpdateOne) sqlSave(ctx context.Context) (_node *Messages, err
 			Column: messages.FieldState,
 		})
 	}
-	if muo.mutation.StateCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
-			Column: messages.FieldState,
-		})
-	}
 	if value, ok := muo.mutation.SmscMessageID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt32,
@@ -883,12 +697,6 @@ func (muo *MessagesUpdateOne) sqlSave(ctx context.Context) (_node *Messages, err
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt32,
 			Value:  value,
-			Column: messages.FieldSmscMessageID,
-		})
-	}
-	if muo.mutation.SmscMessageIDCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
 			Column: messages.FieldSmscMessageID,
 		})
 	}

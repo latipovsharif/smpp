@@ -35,25 +35,9 @@ func (mc *MessagesCreate) SetExternalID(s string) *MessagesCreate {
 	return mc
 }
 
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (mc *MessagesCreate) SetNillableExternalID(s *string) *MessagesCreate {
-	if s != nil {
-		mc.SetExternalID(*s)
-	}
-	return mc
-}
-
 // SetDst sets the "dst" field.
 func (mc *MessagesCreate) SetDst(s string) *MessagesCreate {
 	mc.mutation.SetDst(s)
-	return mc
-}
-
-// SetNillableDst sets the "dst" field if the given value is not nil.
-func (mc *MessagesCreate) SetNillableDst(s *string) *MessagesCreate {
-	if s != nil {
-		mc.SetDst(*s)
-	}
 	return mc
 }
 
@@ -75,25 +59,9 @@ func (mc *MessagesCreate) SetState(i int32) *MessagesCreate {
 	return mc
 }
 
-// SetNillableState sets the "state" field if the given value is not nil.
-func (mc *MessagesCreate) SetNillableState(i *int32) *MessagesCreate {
-	if i != nil {
-		mc.SetState(*i)
-	}
-	return mc
-}
-
 // SetSmscMessageID sets the "smsc_message_id" field.
 func (mc *MessagesCreate) SetSmscMessageID(i int32) *MessagesCreate {
 	mc.mutation.SetSmscMessageID(i)
-	return mc
-}
-
-// SetNillableSmscMessageID sets the "smsc_message_id" field if the given value is not nil.
-func (mc *MessagesCreate) SetNillableSmscMessageID(i *int32) *MessagesCreate {
-	if i != nil {
-		mc.SetSmscMessageID(*i)
-	}
 	return mc
 }
 
@@ -240,16 +208,23 @@ func (mc *MessagesCreate) check() error {
 	if _, ok := mc.mutation.SequenceNumber(); !ok {
 		return &ValidationError{Name: "sequence_number", err: errors.New("ent: missing required field \"sequence_number\"")}
 	}
-	if v, ok := mc.mutation.SequenceNumber(); ok {
-		if err := messages.SequenceNumberValidator(v); err != nil {
-			return &ValidationError{Name: "sequence_number", err: fmt.Errorf("ent: validator failed for field \"sequence_number\": %w", err)}
-		}
+	if _, ok := mc.mutation.ExternalID(); !ok {
+		return &ValidationError{Name: "external_id", err: errors.New("ent: missing required field \"external_id\"")}
+	}
+	if _, ok := mc.mutation.Dst(); !ok {
+		return &ValidationError{Name: "dst", err: errors.New("ent: missing required field \"dst\"")}
 	}
 	if _, ok := mc.mutation.Message(); !ok {
 		return &ValidationError{Name: "message", err: errors.New("ent: missing required field \"message\"")}
 	}
 	if _, ok := mc.mutation.Src(); !ok {
 		return &ValidationError{Name: "src", err: errors.New("ent: missing required field \"src\"")}
+	}
+	if _, ok := mc.mutation.State(); !ok {
+		return &ValidationError{Name: "state", err: errors.New("ent: missing required field \"state\"")}
+	}
+	if _, ok := mc.mutation.SmscMessageID(); !ok {
+		return &ValidationError{Name: "smsc_message_id", err: errors.New("ent: missing required field \"smsc_message_id\"")}
 	}
 	if _, ok := mc.mutation.CreateAt(); !ok {
 		return &ValidationError{Name: "create_at", err: errors.New("ent: missing required field \"create_at\"")}

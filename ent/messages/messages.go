@@ -91,8 +91,6 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// SequenceNumberValidator is a validator for the "sequence_number" field. It is called by the builders before save.
-	SequenceNumberValidator func(int32) error
 	// DefaultCreateAt holds the default value on creation for the "create_at" field.
 	DefaultCreateAt func() time.Time
 	// DefaultUpdateAt holds the default value on creation for the "update_at" field.

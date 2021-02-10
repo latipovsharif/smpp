@@ -49,7 +49,7 @@ func main() {
 	}
 	log.SetOutput(lumberjackLogRotate)
 
-	client := Open("postgresql://postgres:123@127.0.0.1/testdb")
+	client := Open("postgresql://postgres:123@127.0.0.1/messages")
 	
 	// Your code. For example:
 	ctx := context.Background()

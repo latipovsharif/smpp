@@ -20,8 +20,8 @@ func (Price) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New).
 			Unique(),
-		field.Int32("min").Positive(),
-		field.Int32("max").Positive(),
+		field.Int32("min"),
+		field.Int32("max"),
 		field.String("price").Unique(),
 		field.Time("create_at").Default(time.Now),
 		field.Time("update_at").Default(time.Now),

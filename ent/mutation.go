@@ -238,22 +238,9 @@ func (m *MessagesMutation) OldExternalID(ctx context.Context) (v string, err err
 	return oldValue.ExternalID, nil
 }
 
-// ClearExternalID clears the value of the "external_id" field.
-func (m *MessagesMutation) ClearExternalID() {
-	m.external_id = nil
-	m.clearedFields[messages.FieldExternalID] = struct{}{}
-}
-
-// ExternalIDCleared returns if the "external_id" field was cleared in this mutation.
-func (m *MessagesMutation) ExternalIDCleared() bool {
-	_, ok := m.clearedFields[messages.FieldExternalID]
-	return ok
-}
-
 // ResetExternalID resets all changes to the "external_id" field.
 func (m *MessagesMutation) ResetExternalID() {
 	m.external_id = nil
-	delete(m.clearedFields, messages.FieldExternalID)
 }
 
 // SetDst sets the "dst" field.
@@ -287,22 +274,9 @@ func (m *MessagesMutation) OldDst(ctx context.Context) (v string, err error) {
 	return oldValue.Dst, nil
 }
 
-// ClearDst clears the value of the "dst" field.
-func (m *MessagesMutation) ClearDst() {
-	m.dst = nil
-	m.clearedFields[messages.FieldDst] = struct{}{}
-}
-
-// DstCleared returns if the "dst" field was cleared in this mutation.
-func (m *MessagesMutation) DstCleared() bool {
-	_, ok := m.clearedFields[messages.FieldDst]
-	return ok
-}
-
 // ResetDst resets all changes to the "dst" field.
 func (m *MessagesMutation) ResetDst() {
 	m.dst = nil
-	delete(m.clearedFields, messages.FieldDst)
 }
 
 // SetMessage sets the "message" field.
@@ -427,24 +401,10 @@ func (m *MessagesMutation) AddedState() (r int32, exists bool) {
 	return *v, true
 }
 
-// ClearState clears the value of the "state" field.
-func (m *MessagesMutation) ClearState() {
-	m.state = nil
-	m.addstate = nil
-	m.clearedFields[messages.FieldState] = struct{}{}
-}
-
-// StateCleared returns if the "state" field was cleared in this mutation.
-func (m *MessagesMutation) StateCleared() bool {
-	_, ok := m.clearedFields[messages.FieldState]
-	return ok
-}
-
 // ResetState resets all changes to the "state" field.
 func (m *MessagesMutation) ResetState() {
 	m.state = nil
 	m.addstate = nil
-	delete(m.clearedFields, messages.FieldState)
 }
 
 // SetSmscMessageID sets the "smsc_message_id" field.
@@ -497,24 +457,10 @@ func (m *MessagesMutation) AddedSmscMessageID() (r int32, exists bool) {
 	return *v, true
 }
 
-// ClearSmscMessageID clears the value of the "smsc_message_id" field.
-func (m *MessagesMutation) ClearSmscMessageID() {
-	m.smsc_message_id = nil
-	m.addsmsc_message_id = nil
-	m.clearedFields[messages.FieldSmscMessageID] = struct{}{}
-}
-
-// SmscMessageIDCleared returns if the "smsc_message_id" field was cleared in this mutation.
-func (m *MessagesMutation) SmscMessageIDCleared() bool {
-	_, ok := m.clearedFields[messages.FieldSmscMessageID]
-	return ok
-}
-
 // ResetSmscMessageID resets all changes to the "smsc_message_id" field.
 func (m *MessagesMutation) ResetSmscMessageID() {
 	m.smsc_message_id = nil
 	m.addsmsc_message_id = nil
-	delete(m.clearedFields, messages.FieldSmscMessageID)
 }
 
 // SetCreateAt sets the "create_at" field.
@@ -902,20 +848,7 @@ func (m *MessagesMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *MessagesMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(messages.FieldExternalID) {
-		fields = append(fields, messages.FieldExternalID)
-	}
-	if m.FieldCleared(messages.FieldDst) {
-		fields = append(fields, messages.FieldDst)
-	}
-	if m.FieldCleared(messages.FieldState) {
-		fields = append(fields, messages.FieldState)
-	}
-	if m.FieldCleared(messages.FieldSmscMessageID) {
-		fields = append(fields, messages.FieldSmscMessageID)
-	}
-	return fields
+	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -928,20 +861,6 @@ func (m *MessagesMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *MessagesMutation) ClearField(name string) error {
-	switch name {
-	case messages.FieldExternalID:
-		m.ClearExternalID()
-		return nil
-	case messages.FieldDst:
-		m.ClearDst()
-		return nil
-	case messages.FieldState:
-		m.ClearState()
-		return nil
-	case messages.FieldSmscMessageID:
-		m.ClearSmscMessageID()
-		return nil
-	}
 	return fmt.Errorf("unknown Messages nullable field %s", name)
 }
 

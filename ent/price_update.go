@@ -137,18 +137,12 @@ func (pu *PriceUpdate) Save(ctx context.Context) (int, error) {
 		affected int
 	)
 	if len(pu.hooks) == 0 {
-		if err = pu.check(); err != nil {
-			return 0, err
-		}
 		affected, err = pu.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*PriceMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = pu.check(); err != nil {
-				return 0, err
 			}
 			pu.mutation = mutation
 			affected, err = pu.sqlSave(ctx)
@@ -185,21 +179,6 @@ func (pu *PriceUpdate) ExecX(ctx context.Context) {
 	if err := pu.Exec(ctx); err != nil {
 		panic(err)
 	}
-}
-
-// check runs all checks and user-defined validators on the builder.
-func (pu *PriceUpdate) check() error {
-	if v, ok := pu.mutation.Min(); ok {
-		if err := price.MinValidator(v); err != nil {
-			return &ValidationError{Name: "min", err: fmt.Errorf("ent: validator failed for field \"min\": %w", err)}
-		}
-	}
-	if v, ok := pu.mutation.Max(); ok {
-		if err := price.MaxValidator(v); err != nil {
-			return &ValidationError{Name: "max", err: fmt.Errorf("ent: validator failed for field \"max\": %w", err)}
-		}
-	}
-	return nil
 }
 
 func (pu *PriceUpdate) sqlSave(ctx context.Context) (n int, err error) {
@@ -449,18 +428,12 @@ func (puo *PriceUpdateOne) Save(ctx context.Context) (*Price, error) {
 		node *Price
 	)
 	if len(puo.hooks) == 0 {
-		if err = puo.check(); err != nil {
-			return nil, err
-		}
 		node, err = puo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*PriceMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = puo.check(); err != nil {
-				return nil, err
 			}
 			puo.mutation = mutation
 			node, err = puo.sqlSave(ctx)
@@ -497,21 +470,6 @@ func (puo *PriceUpdateOne) ExecX(ctx context.Context) {
 	if err := puo.Exec(ctx); err != nil {
 		panic(err)
 	}
-}
-
-// check runs all checks and user-defined validators on the builder.
-func (puo *PriceUpdateOne) check() error {
-	if v, ok := puo.mutation.Min(); ok {
-		if err := price.MinValidator(v); err != nil {
-			return &ValidationError{Name: "min", err: fmt.Errorf("ent: validator failed for field \"min\": %w", err)}
-		}
-	}
-	if v, ok := puo.mutation.Max(); ok {
-		if err := price.MaxValidator(v); err != nil {
-			return &ValidationError{Name: "max", err: fmt.Errorf("ent: validator failed for field \"max\": %w", err)}
-		}
-	}
-	return nil
 }
 
 func (puo *PriceUpdateOne) sqlSave(ctx context.Context) (_node *Price, err error) {

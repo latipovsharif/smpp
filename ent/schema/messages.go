@@ -20,7 +20,7 @@ func (Messages) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New).
 			Unique(),
-		field.Int32("sequence_number").Positive(),
+		field.Int32("sequence_number"),
 		field.String("external_id"),
 		field.String("dst"),
 		field.String("message"),

@@ -59,10 +59,6 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// MinValidator is a validator for the "min" field. It is called by the builders before save.
-	MinValidator func(int32) error
-	// MaxValidator is a validator for the "max" field. It is called by the builders before save.
-	MaxValidator func(int32) error
 	// DefaultCreateAt holds the default value on creation for the "create_at" field.
 	DefaultCreateAt func() time.Time
 	// DefaultUpdateAt holds the default value on creation for the "update_at" field.

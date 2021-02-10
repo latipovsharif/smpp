@@ -330,20 +330,6 @@ func ExternalIDHasSuffix(v string) predicate.Messages {
 	})
 }
 
-// ExternalIDIsNil applies the IsNil predicate on the "external_id" field.
-func ExternalIDIsNil() predicate.Messages {
-	return predicate.Messages(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldExternalID)))
-	})
-}
-
-// ExternalIDNotNil applies the NotNil predicate on the "external_id" field.
-func ExternalIDNotNil() predicate.Messages {
-	return predicate.Messages(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldExternalID)))
-	})
-}
-
 // ExternalIDEqualFold applies the EqualFold predicate on the "external_id" field.
 func ExternalIDEqualFold(v string) predicate.Messages {
 	return predicate.Messages(func(s *sql.Selector) {
@@ -452,20 +438,6 @@ func DstHasPrefix(v string) predicate.Messages {
 func DstHasSuffix(v string) predicate.Messages {
 	return predicate.Messages(func(s *sql.Selector) {
 		s.Where(sql.HasSuffix(s.C(FieldDst), v))
-	})
-}
-
-// DstIsNil applies the IsNil predicate on the "dst" field.
-func DstIsNil() predicate.Messages {
-	return predicate.Messages(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldDst)))
-	})
-}
-
-// DstNotNil applies the NotNil predicate on the "dst" field.
-func DstNotNil() predicate.Messages {
-	return predicate.Messages(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldDst)))
 	})
 }
 
@@ -781,20 +753,6 @@ func StateLTE(v int32) predicate.Messages {
 	})
 }
 
-// StateIsNil applies the IsNil predicate on the "state" field.
-func StateIsNil() predicate.Messages {
-	return predicate.Messages(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldState)))
-	})
-}
-
-// StateNotNil applies the NotNil predicate on the "state" field.
-func StateNotNil() predicate.Messages {
-	return predicate.Messages(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldState)))
-	})
-}
-
 // SmscMessageIDEQ applies the EQ predicate on the "smsc_message_id" field.
 func SmscMessageIDEQ(v int32) predicate.Messages {
 	return predicate.Messages(func(s *sql.Selector) {
@@ -868,20 +826,6 @@ func SmscMessageIDLT(v int32) predicate.Messages {
 func SmscMessageIDLTE(v int32) predicate.Messages {
 	return predicate.Messages(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldSmscMessageID), v))
-	})
-}
-
-// SmscMessageIDIsNil applies the IsNil predicate on the "smsc_message_id" field.
-func SmscMessageIDIsNil() predicate.Messages {
-	return predicate.Messages(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldSmscMessageID)))
-	})
-}
-
-// SmscMessageIDNotNil applies the NotNil predicate on the "smsc_message_id" field.
-func SmscMessageIDNotNil() predicate.Messages {
-	return predicate.Messages(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldSmscMessageID)))
 	})
 }
 

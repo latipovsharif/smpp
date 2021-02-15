@@ -1,12 +1,12 @@
 package rabbit
 
 import (
+	"context"
 	"encoding/json"
-	"fmt"
+	"smpp/ent"
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/go-pg/pg/v9"
 	"github.com/pkg/errors"
 	"github.com/streadway/amqp"
 )
@@ -23,11 +23,11 @@ type Session struct {
 	queue      amqp.Queue
 	channel    *amqp.Channel
 	done       chan bool
-	db         *pg.DB
+	db         *ent.Client
 }
 
 // NewSession return new rabbitmq session
-func NewSession(db *pg.DB) (*Session, error) {
+func NewSession(db *ent.Client) (*Session, error) {
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot connect to rabbitmq")
@@ -59,7 +59,7 @@ func NewSession(db *pg.DB) (*Session, error) {
 }
 
 // Consume start consuming from SMSChannel
-func (s *Session) Consume(c chan<- Message) {
+func (s *Session) Consume(c chan<- ent.Messages) {
 	msgs, err := s.channel.Consume(
 		s.queue.Name, // queue
 		SMSConsumer,  // consumer
@@ -75,21 +75,32 @@ func (s *Session) Consume(c chan<- Message) {
 	}
 
 	for d := range msgs {
-		message := Message{}
+		ctx := context.Background()
+		message := ent.Messages{}
 		if err := json.Unmarshal(d.Body, &message); err != nil {
 			log.Errorf("cannot unmarshal message: %v", err)
 			if err := d.Nack(false, true); err != nil {
 				log.Errorf("cannot nack message: %v", err)
 			}
 		}
-
-		message.State = StateNew
-		fmt.Println(message)
-
-		if _, err := s.db.Model(&message).Insert(); err != nil {
+		if _, err = s.db.Messages.Create().
+			SetSequenceNumber(message.SequenceNumber).
+			SetExternalID(message.ExternalID).
+			SetDst(message.Dst).
+			SetMessage(message.Message).
+			SetSrc(message.Src).
+			SetState(message.State).
+			SetSmscMessageID(message.SmscMessageID).
+			SetProviderIDID(message.Edges.ProviderID.ID).
+			SetUserID(message.Edges.UserID).
+			Save(ctx); err != nil {
 			log.Errorf("cannot insert message: %v", err)
-			d.Nack(false, true)
 		}
+
+		// if _, err := s.db.Messages(&message).Insert(); err != nil {
+		// 	log.Errorf("cannot insert message: %v", err)
+		// 	d.Nack(false, true)
+		// }
 
 		if err := d.Ack(false); err != nil {
 			log.Error("cannot ack message")

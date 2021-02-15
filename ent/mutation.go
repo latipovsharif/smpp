@@ -50,10 +50,9 @@ type MessagesMutation struct {
 	dst                *string
 	message            *string
 	src                *string
-	state              *int32
-	addstate           *int32
-	smsc_message_id    *int32
-	addsmsc_message_id *int32
+	state              *int
+	addstate           *int
+	smsc_message_id    *string
 	create_at          *time.Time
 	update_at          *time.Time
 	clearedFields      map[string]struct{}
@@ -352,13 +351,13 @@ func (m *MessagesMutation) ResetSrc() {
 }
 
 // SetState sets the "state" field.
-func (m *MessagesMutation) SetState(i int32) {
+func (m *MessagesMutation) SetState(i int) {
 	m.state = &i
 	m.addstate = nil
 }
 
 // State returns the value of the "state" field in the mutation.
-func (m *MessagesMutation) State() (r int32, exists bool) {
+func (m *MessagesMutation) State() (r int, exists bool) {
 	v := m.state
 	if v == nil {
 		return
@@ -369,7 +368,7 @@ func (m *MessagesMutation) State() (r int32, exists bool) {
 // OldState returns the old "state" field's value of the Messages entity.
 // If the Messages object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *MessagesMutation) OldState(ctx context.Context) (v int32, err error) {
+func (m *MessagesMutation) OldState(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldState is only allowed on UpdateOne operations")
 	}
@@ -384,7 +383,7 @@ func (m *MessagesMutation) OldState(ctx context.Context) (v int32, err error) {
 }
 
 // AddState adds i to the "state" field.
-func (m *MessagesMutation) AddState(i int32) {
+func (m *MessagesMutation) AddState(i int) {
 	if m.addstate != nil {
 		*m.addstate += i
 	} else {
@@ -393,7 +392,7 @@ func (m *MessagesMutation) AddState(i int32) {
 }
 
 // AddedState returns the value that was added to the "state" field in this mutation.
-func (m *MessagesMutation) AddedState() (r int32, exists bool) {
+func (m *MessagesMutation) AddedState() (r int, exists bool) {
 	v := m.addstate
 	if v == nil {
 		return
@@ -408,13 +407,12 @@ func (m *MessagesMutation) ResetState() {
 }
 
 // SetSmscMessageID sets the "smsc_message_id" field.
-func (m *MessagesMutation) SetSmscMessageID(i int32) {
-	m.smsc_message_id = &i
-	m.addsmsc_message_id = nil
+func (m *MessagesMutation) SetSmscMessageID(s string) {
+	m.smsc_message_id = &s
 }
 
 // SmscMessageID returns the value of the "smsc_message_id" field in the mutation.
-func (m *MessagesMutation) SmscMessageID() (r int32, exists bool) {
+func (m *MessagesMutation) SmscMessageID() (r string, exists bool) {
 	v := m.smsc_message_id
 	if v == nil {
 		return
@@ -425,7 +423,7 @@ func (m *MessagesMutation) SmscMessageID() (r int32, exists bool) {
 // OldSmscMessageID returns the old "smsc_message_id" field's value of the Messages entity.
 // If the Messages object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *MessagesMutation) OldSmscMessageID(ctx context.Context) (v int32, err error) {
+func (m *MessagesMutation) OldSmscMessageID(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldSmscMessageID is only allowed on UpdateOne operations")
 	}
@@ -439,28 +437,9 @@ func (m *MessagesMutation) OldSmscMessageID(ctx context.Context) (v int32, err e
 	return oldValue.SmscMessageID, nil
 }
 
-// AddSmscMessageID adds i to the "smsc_message_id" field.
-func (m *MessagesMutation) AddSmscMessageID(i int32) {
-	if m.addsmsc_message_id != nil {
-		*m.addsmsc_message_id += i
-	} else {
-		m.addsmsc_message_id = &i
-	}
-}
-
-// AddedSmscMessageID returns the value that was added to the "smsc_message_id" field in this mutation.
-func (m *MessagesMutation) AddedSmscMessageID() (r int32, exists bool) {
-	v := m.addsmsc_message_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
 // ResetSmscMessageID resets all changes to the "smsc_message_id" field.
 func (m *MessagesMutation) ResetSmscMessageID() {
 	m.smsc_message_id = nil
-	m.addsmsc_message_id = nil
 }
 
 // SetCreateAt sets the "create_at" field.
@@ -753,14 +732,14 @@ func (m *MessagesMutation) SetField(name string, value ent.Value) error {
 		m.SetSrc(v)
 		return nil
 	case messages.FieldState:
-		v, ok := value.(int32)
+		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetState(v)
 		return nil
 	case messages.FieldSmscMessageID:
-		v, ok := value.(int32)
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -794,9 +773,6 @@ func (m *MessagesMutation) AddedFields() []string {
 	if m.addstate != nil {
 		fields = append(fields, messages.FieldState)
 	}
-	if m.addsmsc_message_id != nil {
-		fields = append(fields, messages.FieldSmscMessageID)
-	}
 	return fields
 }
 
@@ -809,8 +785,6 @@ func (m *MessagesMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedSequenceNumber()
 	case messages.FieldState:
 		return m.AddedState()
-	case messages.FieldSmscMessageID:
-		return m.AddedSmscMessageID()
 	}
 	return nil, false
 }
@@ -828,18 +802,11 @@ func (m *MessagesMutation) AddField(name string, value ent.Value) error {
 		m.AddSequenceNumber(v)
 		return nil
 	case messages.FieldState:
-		v, ok := value.(int32)
+		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddState(v)
-		return nil
-	case messages.FieldSmscMessageID:
-		v, ok := value.(int32)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddSmscMessageID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Messages numeric field %s", name)

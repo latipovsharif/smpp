@@ -30,9 +30,9 @@ type Messages struct {
 	// Src holds the value of the "src" field.
 	Src string `json:"src,omitempty"`
 	// State holds the value of the "state" field.
-	State int32 `json:"state,omitempty"`
+	State int `json:"state,omitempty"`
 	// SmscMessageID holds the value of the "smsc_message_id" field.
-	SmscMessageID int32 `json:"smsc_message_id,omitempty"`
+	SmscMessageID string `json:"smsc_message_id,omitempty"`
 	// CreateAt holds the value of the "create_at" field.
 	CreateAt time.Time `json:"create_at,omitempty"`
 	// UpdateAt holds the value of the "update_at" field.
@@ -88,9 +88,9 @@ func (*Messages) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case messages.FieldSequenceNumber, messages.FieldState, messages.FieldSmscMessageID:
+		case messages.FieldSequenceNumber, messages.FieldState:
 			values[i] = &sql.NullInt64{}
-		case messages.FieldExternalID, messages.FieldDst, messages.FieldMessage, messages.FieldSrc:
+		case messages.FieldExternalID, messages.FieldDst, messages.FieldMessage, messages.FieldSrc, messages.FieldSmscMessageID:
 			values[i] = &sql.NullString{}
 		case messages.FieldCreateAt, messages.FieldUpdateAt:
 			values[i] = &sql.NullTime{}
@@ -155,13 +155,13 @@ func (m *Messages) assignValues(columns []string, values []interface{}) error {
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field state", values[i])
 			} else if value.Valid {
-				m.State = int32(value.Int64)
+				m.State = int(value.Int64)
 			}
 		case messages.FieldSmscMessageID:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field smsc_message_id", values[i])
 			} else if value.Valid {
-				m.SmscMessageID = int32(value.Int64)
+				m.SmscMessageID = value.String
 			}
 		case messages.FieldCreateAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -238,7 +238,7 @@ func (m *Messages) String() string {
 	builder.WriteString(", state=")
 	builder.WriteString(fmt.Sprintf("%v", m.State))
 	builder.WriteString(", smsc_message_id=")
-	builder.WriteString(fmt.Sprintf("%v", m.SmscMessageID))
+	builder.WriteString(m.SmscMessageID)
 	builder.WriteString(", create_at=")
 	builder.WriteString(m.CreateAt.Format(time.ANSIC))
 	builder.WriteString(", update_at=")

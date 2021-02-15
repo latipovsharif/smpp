@@ -1,7 +1,5 @@
 package rabbit
 
-import "time"
-
 type state int
 
 // Message states
@@ -12,14 +10,16 @@ const (
 )
 
 // Message format to share between sender and consumer
-type Message struct {
-	ID              int32
-	ExternalID      string
-	Dst             string
-	Message         string
-	Src             string
-	State           state
-	CreatedAt       *time.Time
-	LastUpdatedDate *time.Time
-	SMSCMessageID   string
-}
+// type Message struct {
+// 	SequenceNumber  int32      `json:"sequenceNumber"`
+// 	ExternalID      string     `json:"externalID"`
+// 	Dst             string     `json:"dst"`
+// 	Message         string     `json:"message"`
+// 	Src             string     `json:"src"`
+// 	State           state      `json:"state"`
+// 	SMSCMessageID   string     `json:"smsCMessageID"`
+// 	ProviderID      string     `json:"providerID"`
+// 	UserID          string     `json:"userID"`
+// 	CreatedAt       *time.Time `json:"createdAt"`
+// 	LastUpdatedDate *time.Time `json:"lastUpdatedDate"`
+// }

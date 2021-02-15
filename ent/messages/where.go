@@ -130,14 +130,14 @@ func Src(v string) predicate.Messages {
 }
 
 // State applies equality check predicate on the "state" field. It's identical to StateEQ.
-func State(v int32) predicate.Messages {
+func State(v int) predicate.Messages {
 	return predicate.Messages(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldState), v))
 	})
 }
 
 // SmscMessageID applies equality check predicate on the "smsc_message_id" field. It's identical to SmscMessageIDEQ.
-func SmscMessageID(v int32) predicate.Messages {
+func SmscMessageID(v string) predicate.Messages {
 	return predicate.Messages(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldSmscMessageID), v))
 	})
@@ -678,21 +678,21 @@ func SrcContainsFold(v string) predicate.Messages {
 }
 
 // StateEQ applies the EQ predicate on the "state" field.
-func StateEQ(v int32) predicate.Messages {
+func StateEQ(v int) predicate.Messages {
 	return predicate.Messages(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldState), v))
 	})
 }
 
 // StateNEQ applies the NEQ predicate on the "state" field.
-func StateNEQ(v int32) predicate.Messages {
+func StateNEQ(v int) predicate.Messages {
 	return predicate.Messages(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldState), v))
 	})
 }
 
 // StateIn applies the In predicate on the "state" field.
-func StateIn(vs ...int32) predicate.Messages {
+func StateIn(vs ...int) predicate.Messages {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -709,7 +709,7 @@ func StateIn(vs ...int32) predicate.Messages {
 }
 
 // StateNotIn applies the NotIn predicate on the "state" field.
-func StateNotIn(vs ...int32) predicate.Messages {
+func StateNotIn(vs ...int) predicate.Messages {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -726,49 +726,49 @@ func StateNotIn(vs ...int32) predicate.Messages {
 }
 
 // StateGT applies the GT predicate on the "state" field.
-func StateGT(v int32) predicate.Messages {
+func StateGT(v int) predicate.Messages {
 	return predicate.Messages(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldState), v))
 	})
 }
 
 // StateGTE applies the GTE predicate on the "state" field.
-func StateGTE(v int32) predicate.Messages {
+func StateGTE(v int) predicate.Messages {
 	return predicate.Messages(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldState), v))
 	})
 }
 
 // StateLT applies the LT predicate on the "state" field.
-func StateLT(v int32) predicate.Messages {
+func StateLT(v int) predicate.Messages {
 	return predicate.Messages(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldState), v))
 	})
 }
 
 // StateLTE applies the LTE predicate on the "state" field.
-func StateLTE(v int32) predicate.Messages {
+func StateLTE(v int) predicate.Messages {
 	return predicate.Messages(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldState), v))
 	})
 }
 
 // SmscMessageIDEQ applies the EQ predicate on the "smsc_message_id" field.
-func SmscMessageIDEQ(v int32) predicate.Messages {
+func SmscMessageIDEQ(v string) predicate.Messages {
 	return predicate.Messages(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldSmscMessageID), v))
 	})
 }
 
 // SmscMessageIDNEQ applies the NEQ predicate on the "smsc_message_id" field.
-func SmscMessageIDNEQ(v int32) predicate.Messages {
+func SmscMessageIDNEQ(v string) predicate.Messages {
 	return predicate.Messages(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldSmscMessageID), v))
 	})
 }
 
 // SmscMessageIDIn applies the In predicate on the "smsc_message_id" field.
-func SmscMessageIDIn(vs ...int32) predicate.Messages {
+func SmscMessageIDIn(vs ...string) predicate.Messages {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -785,7 +785,7 @@ func SmscMessageIDIn(vs ...int32) predicate.Messages {
 }
 
 // SmscMessageIDNotIn applies the NotIn predicate on the "smsc_message_id" field.
-func SmscMessageIDNotIn(vs ...int32) predicate.Messages {
+func SmscMessageIDNotIn(vs ...string) predicate.Messages {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -802,30 +802,65 @@ func SmscMessageIDNotIn(vs ...int32) predicate.Messages {
 }
 
 // SmscMessageIDGT applies the GT predicate on the "smsc_message_id" field.
-func SmscMessageIDGT(v int32) predicate.Messages {
+func SmscMessageIDGT(v string) predicate.Messages {
 	return predicate.Messages(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldSmscMessageID), v))
 	})
 }
 
 // SmscMessageIDGTE applies the GTE predicate on the "smsc_message_id" field.
-func SmscMessageIDGTE(v int32) predicate.Messages {
+func SmscMessageIDGTE(v string) predicate.Messages {
 	return predicate.Messages(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldSmscMessageID), v))
 	})
 }
 
 // SmscMessageIDLT applies the LT predicate on the "smsc_message_id" field.
-func SmscMessageIDLT(v int32) predicate.Messages {
+func SmscMessageIDLT(v string) predicate.Messages {
 	return predicate.Messages(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldSmscMessageID), v))
 	})
 }
 
 // SmscMessageIDLTE applies the LTE predicate on the "smsc_message_id" field.
-func SmscMessageIDLTE(v int32) predicate.Messages {
+func SmscMessageIDLTE(v string) predicate.Messages {
 	return predicate.Messages(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldSmscMessageID), v))
+	})
+}
+
+// SmscMessageIDContains applies the Contains predicate on the "smsc_message_id" field.
+func SmscMessageIDContains(v string) predicate.Messages {
+	return predicate.Messages(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldSmscMessageID), v))
+	})
+}
+
+// SmscMessageIDHasPrefix applies the HasPrefix predicate on the "smsc_message_id" field.
+func SmscMessageIDHasPrefix(v string) predicate.Messages {
+	return predicate.Messages(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldSmscMessageID), v))
+	})
+}
+
+// SmscMessageIDHasSuffix applies the HasSuffix predicate on the "smsc_message_id" field.
+func SmscMessageIDHasSuffix(v string) predicate.Messages {
+	return predicate.Messages(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldSmscMessageID), v))
+	})
+}
+
+// SmscMessageIDEqualFold applies the EqualFold predicate on the "smsc_message_id" field.
+func SmscMessageIDEqualFold(v string) predicate.Messages {
+	return predicate.Messages(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldSmscMessageID), v))
+	})
+}
+
+// SmscMessageIDContainsFold applies the ContainsFold predicate on the "smsc_message_id" field.
+func SmscMessageIDContainsFold(v string) predicate.Messages {
+	return predicate.Messages(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldSmscMessageID), v))
 	})
 }
 

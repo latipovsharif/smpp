@@ -25,8 +25,8 @@ func (Messages) Fields() []ent.Field {
 		field.String("dst"),
 		field.String("message"),
 		field.String("src"),
-		field.Int32("state"),
-		field.Int32("smsc_message_id"),
+		field.Int("state"),
+		field.String("smsc_message_id"),
 		field.Time("create_at").Default(time.Now),
 		field.Time("update_at").Default(time.Now),
 	}

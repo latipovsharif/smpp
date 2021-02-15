@@ -54,14 +54,14 @@ func (mc *MessagesCreate) SetSrc(s string) *MessagesCreate {
 }
 
 // SetState sets the "state" field.
-func (mc *MessagesCreate) SetState(i int32) *MessagesCreate {
+func (mc *MessagesCreate) SetState(i int) *MessagesCreate {
 	mc.mutation.SetState(i)
 	return mc
 }
 
 // SetSmscMessageID sets the "smsc_message_id" field.
-func (mc *MessagesCreate) SetSmscMessageID(i int32) *MessagesCreate {
-	mc.mutation.SetSmscMessageID(i)
+func (mc *MessagesCreate) SetSmscMessageID(s string) *MessagesCreate {
+	mc.mutation.SetSmscMessageID(s)
 	return mc
 }
 
@@ -303,7 +303,7 @@ func (mc *MessagesCreate) createSpec() (*Messages, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := mc.mutation.State(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
+			Type:   field.TypeInt,
 			Value:  value,
 			Column: messages.FieldState,
 		})
@@ -311,7 +311,7 @@ func (mc *MessagesCreate) createSpec() (*Messages, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := mc.mutation.SmscMessageID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
+			Type:   field.TypeString,
 			Value:  value,
 			Column: messages.FieldSmscMessageID,
 		})

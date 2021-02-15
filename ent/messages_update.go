@@ -68,28 +68,21 @@ func (mu *MessagesUpdate) SetSrc(s string) *MessagesUpdate {
 }
 
 // SetState sets the "state" field.
-func (mu *MessagesUpdate) SetState(i int32) *MessagesUpdate {
+func (mu *MessagesUpdate) SetState(i int) *MessagesUpdate {
 	mu.mutation.ResetState()
 	mu.mutation.SetState(i)
 	return mu
 }
 
 // AddState adds i to the "state" field.
-func (mu *MessagesUpdate) AddState(i int32) *MessagesUpdate {
+func (mu *MessagesUpdate) AddState(i int) *MessagesUpdate {
 	mu.mutation.AddState(i)
 	return mu
 }
 
 // SetSmscMessageID sets the "smsc_message_id" field.
-func (mu *MessagesUpdate) SetSmscMessageID(i int32) *MessagesUpdate {
-	mu.mutation.ResetSmscMessageID()
-	mu.mutation.SetSmscMessageID(i)
-	return mu
-}
-
-// AddSmscMessageID adds i to the "smsc_message_id" field.
-func (mu *MessagesUpdate) AddSmscMessageID(i int32) *MessagesUpdate {
-	mu.mutation.AddSmscMessageID(i)
+func (mu *MessagesUpdate) SetSmscMessageID(s string) *MessagesUpdate {
+	mu.mutation.SetSmscMessageID(s)
 	return mu
 }
 
@@ -289,28 +282,21 @@ func (mu *MessagesUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := mu.mutation.State(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
+			Type:   field.TypeInt,
 			Value:  value,
 			Column: messages.FieldState,
 		})
 	}
 	if value, ok := mu.mutation.AddedState(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
+			Type:   field.TypeInt,
 			Value:  value,
 			Column: messages.FieldState,
 		})
 	}
 	if value, ok := mu.mutation.SmscMessageID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
-			Value:  value,
-			Column: messages.FieldSmscMessageID,
-		})
-	}
-	if value, ok := mu.mutation.AddedSmscMessageID(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
+			Type:   field.TypeString,
 			Value:  value,
 			Column: messages.FieldSmscMessageID,
 		})
@@ -455,28 +441,21 @@ func (muo *MessagesUpdateOne) SetSrc(s string) *MessagesUpdateOne {
 }
 
 // SetState sets the "state" field.
-func (muo *MessagesUpdateOne) SetState(i int32) *MessagesUpdateOne {
+func (muo *MessagesUpdateOne) SetState(i int) *MessagesUpdateOne {
 	muo.mutation.ResetState()
 	muo.mutation.SetState(i)
 	return muo
 }
 
 // AddState adds i to the "state" field.
-func (muo *MessagesUpdateOne) AddState(i int32) *MessagesUpdateOne {
+func (muo *MessagesUpdateOne) AddState(i int) *MessagesUpdateOne {
 	muo.mutation.AddState(i)
 	return muo
 }
 
 // SetSmscMessageID sets the "smsc_message_id" field.
-func (muo *MessagesUpdateOne) SetSmscMessageID(i int32) *MessagesUpdateOne {
-	muo.mutation.ResetSmscMessageID()
-	muo.mutation.SetSmscMessageID(i)
-	return muo
-}
-
-// AddSmscMessageID adds i to the "smsc_message_id" field.
-func (muo *MessagesUpdateOne) AddSmscMessageID(i int32) *MessagesUpdateOne {
-	muo.mutation.AddSmscMessageID(i)
+func (muo *MessagesUpdateOne) SetSmscMessageID(s string) *MessagesUpdateOne {
+	muo.mutation.SetSmscMessageID(s)
 	return muo
 }
 
@@ -674,28 +653,21 @@ func (muo *MessagesUpdateOne) sqlSave(ctx context.Context) (_node *Messages, err
 	}
 	if value, ok := muo.mutation.State(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
+			Type:   field.TypeInt,
 			Value:  value,
 			Column: messages.FieldState,
 		})
 	}
 	if value, ok := muo.mutation.AddedState(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
+			Type:   field.TypeInt,
 			Value:  value,
 			Column: messages.FieldState,
 		})
 	}
 	if value, ok := muo.mutation.SmscMessageID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
-			Value:  value,
-			Column: messages.FieldSmscMessageID,
-		})
-	}
-	if value, ok := muo.mutation.AddedSmscMessageID(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
+			Type:   field.TypeString,
 			Value:  value,
 			Column: messages.FieldSmscMessageID,
 		})

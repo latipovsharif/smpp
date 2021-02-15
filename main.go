@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
@@ -11,29 +10,18 @@ import (
 	"smpp/rabbit"
 	"smpp/smsc"
 
-	"github.com/go-pg/pg/v9"
 	"gopkg.in/natefinch/lumberjack.v2"
 
-	"github.com/facebook/ent/dialect"
-	entsql "github.com/facebook/ent/dialect/sql"
-	_ "github.com/jackc/pgx/v4/stdlib"
+	"github.com/go-pg/pg"
+	_ "github.com/go-pg/pg"
+
+	//_ "github.com/jackc/pgx/v4/stdlib"
+	_ "github.com/lib/pq"
 )
 
-// Open new connection
-func Open(dbURL string) *ent.Client {
-	db, err := sql.Open("pgx", dbURL)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Create an ent.Driver from `db`.
-	drv := entsql.OpenDB(dialect.Postgres, db)
-	x0 := ent.NewClient(ent.Driver(drv))
-	return x0
-}
-
 var db *pg.DB
-var messages chan rabbit.Message
+var client *ent.Client
+var messages chan *ent.Messages
 
 const logFilePath = "logs/smpp.log"
 const appVersion = "0.0.1"
@@ -49,29 +37,22 @@ func main() {
 	}
 	log.SetOutput(lumberjackLogRotate)
 
-	client := Open("postgresql://postgres:123@127.0.0.1/messages")
-	
-	// Your code. For example:
-	ctx := context.Background()
-	if err := client.Schema.Create(ctx); err != nil {
+	client, err := ent.Open("postgres", "postgres://postgres:123@localhost:5432/testdb?sslmode=disable")
+	if err != nil {
 		log.Fatal(err)
 	}
-	defer client.Close()
-	
-	db = pg.Connect(&pg.Options{
-		Addr:     "localhost:5432",
-		Database: "messages",
-		User:     "postgres",
-		Password: "123",
-	})
+	ctx := context.Background()
+	if err := client.Schema.Create(ctx); err != nil {
+		log.Fatalf("failed creating schema resources: %v", err)
+	}
 
 	sigs := make(chan os.Signal)
 	signal.Notify(sigs, os.Interrupt, os.Kill)
-	messages := make(chan rabbit.Message)
+	messages := make(chan ent.Messages)
 
-	s := smsc.NewSession(db)
+	s := smsc.NewSession(client)
 
-	rs, err := rabbit.NewSession(db)
+	rs, err := rabbit.NewSession(client)
 	if err != nil {
 		log.Fatalf("cannot get rabbit session")
 	}
@@ -85,4 +66,5 @@ func main() {
 	<-sigs
 	s.Close()
 	rs.Close()
+
 }

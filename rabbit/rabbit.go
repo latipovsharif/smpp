@@ -89,13 +89,8 @@ func (s *Session) Consume(c chan<- ent.Messages) {
 			}
 			continue
 		}
-		userID := uuid.MustParse(message.UserId.String())
-		providerID := uuid.MustParse(message.ProviderId.String())
 
-		if err != nil {
-			log.Errorf("cannot select user: %v", err)
-		}
-		if s.chekBalans(ctx, userID) {
+		if s.chekBalans(ctx, message.UserId) {
 			message.State = int(StateNew)
 		}
 
@@ -107,13 +102,13 @@ func (s *Session) Consume(c chan<- ent.Messages) {
 			SetSrc(message.Src).
 			SetState(message.State).
 			SetSmscMessageID(message.SmscMessageID).
-			SetProviderIDID(providerID).
-			SetUserIDID(userID).
+			SetProviderIDID(message.UserId).
+			SetUserIDID(message.ProviderId).
 			Save(ctx); err != nil {
 			log.Errorf("cannot insert message: %v", err)
 			d.Nack(false, true)
 		}
-		s.createUserMessage(ctx, userID, providerID)
+		s.createUserMessage(ctx, message.UserId, message.ProviderId)
 		if err = d.Ack(false); err != nil {
 			log.Error("cannot ack message")
 		}

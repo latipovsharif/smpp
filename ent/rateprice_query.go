@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -11,6 +12,7 @@ import (
 	"smpp/ent/price"
 	"smpp/ent/rate"
 	"smpp/ent/rateprice"
+	"smpp/ent/user"
 
 	"github.com/facebook/ent/dialect/sql"
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
@@ -29,6 +31,7 @@ type RatePriceQuery struct {
 	// eager-loading edges.
 	withIDRate  *RateQuery
 	withIDPrice *PriceQuery
+	withUser    *UserQuery
 	withFKs     bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -96,6 +99,28 @@ func (rpq *RatePriceQuery) QueryIDPrice() *PriceQuery {
 			sqlgraph.From(rateprice.Table, rateprice.FieldID, selector),
 			sqlgraph.To(price.Table, price.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, rateprice.IDPriceTable, rateprice.IDPriceColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(rpq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryUser chains the current query on the "user" edge.
+func (rpq *RatePriceQuery) QueryUser() *UserQuery {
+	query := &UserQuery{config: rpq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := rpq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := rpq.sqlQuery()
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(rateprice.Table, rateprice.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, rateprice.UserTable, rateprice.UserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(rpq.driver.Dialect(), step)
 		return fromU, nil
@@ -286,6 +311,7 @@ func (rpq *RatePriceQuery) Clone() *RatePriceQuery {
 		predicates:  append([]predicate.RatePrice{}, rpq.predicates...),
 		withIDRate:  rpq.withIDRate.Clone(),
 		withIDPrice: rpq.withIDPrice.Clone(),
+		withUser:    rpq.withUser.Clone(),
 		// clone intermediate query.
 		sql:  rpq.sql.Clone(),
 		path: rpq.path,
@@ -311,6 +337,17 @@ func (rpq *RatePriceQuery) WithIDPrice(opts ...func(*PriceQuery)) *RatePriceQuer
 		opt(query)
 	}
 	rpq.withIDPrice = query
+	return rpq
+}
+
+// WithUser tells the query-builder to eager-load the nodes that are connected to
+// the "user" edge. The optional arguments are used to configure the query builder of the edge.
+func (rpq *RatePriceQuery) WithUser(opts ...func(*UserQuery)) *RatePriceQuery {
+	query := &UserQuery{config: rpq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	rpq.withUser = query
 	return rpq
 }
 
@@ -380,9 +417,10 @@ func (rpq *RatePriceQuery) sqlAll(ctx context.Context) ([]*RatePrice, error) {
 		nodes       = []*RatePrice{}
 		withFKs     = rpq.withFKs
 		_spec       = rpq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			rpq.withIDRate != nil,
 			rpq.withIDPrice != nil,
+			rpq.withUser != nil,
 		}
 	)
 	if rpq.withIDRate != nil || rpq.withIDPrice != nil {
@@ -458,6 +496,35 @@ func (rpq *RatePriceQuery) sqlAll(ctx context.Context) ([]*RatePrice, error) {
 			for i := range nodes {
 				nodes[i].Edges.IDPrice = n
 			}
+		}
+	}
+
+	if query := rpq.withUser; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[uuid.UUID]*RatePrice)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.User = []*User{}
+		}
+		query.withFKs = true
+		query.Where(predicate.User(func(s *sql.Selector) {
+			s.Where(sql.InValues(rateprice.UserColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.rate_id
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "rate_id" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "rate_id" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.User = append(node.Edges.User, n)
 		}
 	}
 

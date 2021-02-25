@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"smpp/ent/messages"
 	"smpp/ent/predicate"
-	"smpp/ent/rate"
+	"smpp/ent/rateprice"
 	"smpp/ent/user"
 	"smpp/ent/usermonthmessage"
 	"time"
@@ -110,13 +110,13 @@ func (uu *UserUpdate) AddMessages(m ...*Messages) *UserUpdate {
 	return uu.AddMessageIDs(ids...)
 }
 
-// SetRateIDID sets the "rate_id" edge to the Rate entity by ID.
+// SetRateIDID sets the "rate_id" edge to the RatePrice entity by ID.
 func (uu *UserUpdate) SetRateIDID(id uuid.UUID) *UserUpdate {
 	uu.mutation.SetRateIDID(id)
 	return uu
 }
 
-// SetNillableRateIDID sets the "rate_id" edge to the Rate entity by ID if the given value is not nil.
+// SetNillableRateIDID sets the "rate_id" edge to the RatePrice entity by ID if the given value is not nil.
 func (uu *UserUpdate) SetNillableRateIDID(id *uuid.UUID) *UserUpdate {
 	if id != nil {
 		uu = uu.SetRateIDID(*id)
@@ -124,8 +124,8 @@ func (uu *UserUpdate) SetNillableRateIDID(id *uuid.UUID) *UserUpdate {
 	return uu
 }
 
-// SetRateID sets the "rate_id" edge to the Rate entity.
-func (uu *UserUpdate) SetRateID(r *Rate) *UserUpdate {
+// SetRateID sets the "rate_id" edge to the RatePrice entity.
+func (uu *UserUpdate) SetRateID(r *RatePrice) *UserUpdate {
 	return uu.SetRateIDID(r.ID)
 }
 
@@ -176,7 +176,7 @@ func (uu *UserUpdate) RemoveMessages(m ...*Messages) *UserUpdate {
 	return uu.RemoveMessageIDs(ids...)
 }
 
-// ClearRateID clears the "rate_id" edge to the Rate entity.
+// ClearRateID clears the "rate_id" edge to the RatePrice entity.
 func (uu *UserUpdate) ClearRateID() *UserUpdate {
 	uu.mutation.ClearRateID()
 	return uu
@@ -397,7 +397,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: rate.FieldID,
+					Column: rateprice.FieldID,
 				},
 			},
 		}
@@ -413,7 +413,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: rate.FieldID,
+					Column: rateprice.FieldID,
 				},
 			},
 		}
@@ -519,13 +519,13 @@ func (uuo *UserUpdateOne) AddMessages(m ...*Messages) *UserUpdateOne {
 	return uuo.AddMessageIDs(ids...)
 }
 
-// SetRateIDID sets the "rate_id" edge to the Rate entity by ID.
+// SetRateIDID sets the "rate_id" edge to the RatePrice entity by ID.
 func (uuo *UserUpdateOne) SetRateIDID(id uuid.UUID) *UserUpdateOne {
 	uuo.mutation.SetRateIDID(id)
 	return uuo
 }
 
-// SetNillableRateIDID sets the "rate_id" edge to the Rate entity by ID if the given value is not nil.
+// SetNillableRateIDID sets the "rate_id" edge to the RatePrice entity by ID if the given value is not nil.
 func (uuo *UserUpdateOne) SetNillableRateIDID(id *uuid.UUID) *UserUpdateOne {
 	if id != nil {
 		uuo = uuo.SetRateIDID(*id)
@@ -533,8 +533,8 @@ func (uuo *UserUpdateOne) SetNillableRateIDID(id *uuid.UUID) *UserUpdateOne {
 	return uuo
 }
 
-// SetRateID sets the "rate_id" edge to the Rate entity.
-func (uuo *UserUpdateOne) SetRateID(r *Rate) *UserUpdateOne {
+// SetRateID sets the "rate_id" edge to the RatePrice entity.
+func (uuo *UserUpdateOne) SetRateID(r *RatePrice) *UserUpdateOne {
 	return uuo.SetRateIDID(r.ID)
 }
 
@@ -585,7 +585,7 @@ func (uuo *UserUpdateOne) RemoveMessages(m ...*Messages) *UserUpdateOne {
 	return uuo.RemoveMessageIDs(ids...)
 }
 
-// ClearRateID clears the "rate_id" edge to the Rate entity.
+// ClearRateID clears the "rate_id" edge to the RatePrice entity.
 func (uuo *UserUpdateOne) ClearRateID() *UserUpdateOne {
 	uuo.mutation.ClearRateID()
 	return uuo
@@ -804,7 +804,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: rate.FieldID,
+					Column: rateprice.FieldID,
 				},
 			},
 		}
@@ -820,7 +820,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: rate.FieldID,
+					Column: rateprice.FieldID,
 				},
 			},
 		}

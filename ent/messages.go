@@ -37,10 +37,13 @@ type Messages struct {
 	CreateAt time.Time `json:"create_at,omitempty"`
 	// UpdateAt holds the value of the "update_at" field.
 	UpdateAt time.Time `json:"update_at,omitempty"`
+
+	UserId     *uuid.UUID `json:"user_id"`
+	ProviderId *uuid.UUID `json:"provider_id"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MessagesQuery when eager-loading is set.
 	Edges       MessagesEdges `json:"edges"`
-	provider_id *uuid.UUID
+	provider_id *uuid.UUID    `json:""`
 	user_id     *uuid.UUID
 }
 

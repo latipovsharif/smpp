@@ -412,7 +412,7 @@ func HasRateID() predicate.User {
 }
 
 // HasRateIDWith applies the HasEdge predicate on the "rate_id" edge with a given conditions (other predicates).
-func HasRateIDWith(preds ...predicate.Rate) predicate.User {
+func HasRateIDWith(preds ...predicate.RatePrice) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),

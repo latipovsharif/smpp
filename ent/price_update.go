@@ -56,8 +56,15 @@ func (pu *PriceUpdate) AddMax(i int32) *PriceUpdate {
 }
 
 // SetPrice sets the "price" field.
-func (pu *PriceUpdate) SetPrice(s string) *PriceUpdate {
-	pu.mutation.SetPrice(s)
+func (pu *PriceUpdate) SetPrice(i int16) *PriceUpdate {
+	pu.mutation.ResetPrice()
+	pu.mutation.SetPrice(i)
+	return pu
+}
+
+// AddPrice adds i to the "price" field.
+func (pu *PriceUpdate) AddPrice(i int16) *PriceUpdate {
+	pu.mutation.AddPrice(i)
 	return pu
 }
 
@@ -229,7 +236,14 @@ func (pu *PriceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := pu.mutation.Price(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
+			Type:   field.TypeInt16,
+			Value:  value,
+			Column: price.FieldPrice,
+		})
+	}
+	if value, ok := pu.mutation.AddedPrice(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt16,
 			Value:  value,
 			Column: price.FieldPrice,
 		})
@@ -347,8 +361,15 @@ func (puo *PriceUpdateOne) AddMax(i int32) *PriceUpdateOne {
 }
 
 // SetPrice sets the "price" field.
-func (puo *PriceUpdateOne) SetPrice(s string) *PriceUpdateOne {
-	puo.mutation.SetPrice(s)
+func (puo *PriceUpdateOne) SetPrice(i int16) *PriceUpdateOne {
+	puo.mutation.ResetPrice()
+	puo.mutation.SetPrice(i)
+	return puo
+}
+
+// AddPrice adds i to the "price" field.
+func (puo *PriceUpdateOne) AddPrice(i int16) *PriceUpdateOne {
+	puo.mutation.AddPrice(i)
 	return puo
 }
 
@@ -518,7 +539,14 @@ func (puo *PriceUpdateOne) sqlSave(ctx context.Context) (_node *Price, err error
 	}
 	if value, ok := puo.mutation.Price(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
+			Type:   field.TypeInt16,
+			Value:  value,
+			Column: price.FieldPrice,
+		})
+	}
+	if value, ok := puo.mutation.AddedPrice(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt16,
 			Value:  value,
 			Column: price.FieldPrice,
 		})

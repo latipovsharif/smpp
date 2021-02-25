@@ -45,9 +45,9 @@ const (
 	MessagesColumn = "user_id"
 	// RateIDTable is the table the holds the rate_id relation/edge.
 	RateIDTable = "users"
-	// RateIDInverseTable is the table name for the Rate entity.
-	// It exists in this package in order to avoid circular dependency with the "rate" package.
-	RateIDInverseTable = "rates"
+	// RateIDInverseTable is the table name for the RatePrice entity.
+	// It exists in this package in order to avoid circular dependency with the "rateprice" package.
+	RateIDInverseTable = "rate_prices"
 	// RateIDColumn is the table column denoting the rate_id relation/edge.
 	RateIDColumn = "rate_id"
 )

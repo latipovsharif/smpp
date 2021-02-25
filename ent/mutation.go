@@ -970,7 +970,8 @@ type PriceMutation struct {
 	addmin          *int32
 	max             *int32
 	addmax          *int32
-	price           *string
+	price           *int16
+	addprice        *int16
 	create_at       *time.Time
 	update_at       *time.Time
 	clearedFields   map[string]struct{}
@@ -1180,12 +1181,13 @@ func (m *PriceMutation) ResetMax() {
 }
 
 // SetPrice sets the "price" field.
-func (m *PriceMutation) SetPrice(s string) {
-	m.price = &s
+func (m *PriceMutation) SetPrice(i int16) {
+	m.price = &i
+	m.addprice = nil
 }
 
 // Price returns the value of the "price" field in the mutation.
-func (m *PriceMutation) Price() (r string, exists bool) {
+func (m *PriceMutation) Price() (r int16, exists bool) {
 	v := m.price
 	if v == nil {
 		return
@@ -1196,7 +1198,7 @@ func (m *PriceMutation) Price() (r string, exists bool) {
 // OldPrice returns the old "price" field's value of the Price entity.
 // If the Price object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PriceMutation) OldPrice(ctx context.Context) (v string, err error) {
+func (m *PriceMutation) OldPrice(ctx context.Context) (v int16, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldPrice is only allowed on UpdateOne operations")
 	}
@@ -1210,9 +1212,28 @@ func (m *PriceMutation) OldPrice(ctx context.Context) (v string, err error) {
 	return oldValue.Price, nil
 }
 
+// AddPrice adds i to the "price" field.
+func (m *PriceMutation) AddPrice(i int16) {
+	if m.addprice != nil {
+		*m.addprice += i
+	} else {
+		m.addprice = &i
+	}
+}
+
+// AddedPrice returns the value that was added to the "price" field in this mutation.
+func (m *PriceMutation) AddedPrice() (r int16, exists bool) {
+	v := m.addprice
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
 // ResetPrice resets all changes to the "price" field.
 func (m *PriceMutation) ResetPrice() {
 	m.price = nil
+	m.addprice = nil
 }
 
 // SetCreateAt sets the "create_at" field.
@@ -1431,7 +1452,7 @@ func (m *PriceMutation) SetField(name string, value ent.Value) error {
 		m.SetMax(v)
 		return nil
 	case price.FieldPrice:
-		v, ok := value.(string)
+		v, ok := value.(int16)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -1465,6 +1486,9 @@ func (m *PriceMutation) AddedFields() []string {
 	if m.addmax != nil {
 		fields = append(fields, price.FieldMax)
 	}
+	if m.addprice != nil {
+		fields = append(fields, price.FieldPrice)
+	}
 	return fields
 }
 
@@ -1477,6 +1501,8 @@ func (m *PriceMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedMin()
 	case price.FieldMax:
 		return m.AddedMax()
+	case price.FieldPrice:
+		return m.AddedPrice()
 	}
 	return nil, false
 }
@@ -1499,6 +1525,13 @@ func (m *PriceMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddMax(v)
+		return nil
+	case price.FieldPrice:
+		v, ok := value.(int16)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddPrice(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Price numeric field %s", name)
@@ -2272,9 +2305,6 @@ type RateMutation struct {
 	rate_id        map[uuid.UUID]struct{}
 	removedrate_id map[uuid.UUID]struct{}
 	clearedrate_id bool
-	user           map[uuid.UUID]struct{}
-	removeduser    map[uuid.UUID]struct{}
-	cleareduser    bool
 	done           bool
 	oldValue       func(context.Context) (*Rate, error)
 	predicates     []predicate.Rate
@@ -2526,59 +2556,6 @@ func (m *RateMutation) ResetRateID() {
 	m.removedrate_id = nil
 }
 
-// AddUserIDs adds the "user" edge to the User entity by ids.
-func (m *RateMutation) AddUserIDs(ids ...uuid.UUID) {
-	if m.user == nil {
-		m.user = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.user[ids[i]] = struct{}{}
-	}
-}
-
-// ClearUser clears the "user" edge to the User entity.
-func (m *RateMutation) ClearUser() {
-	m.cleareduser = true
-}
-
-// UserCleared returns if the "user" edge to the User entity was cleared.
-func (m *RateMutation) UserCleared() bool {
-	return m.cleareduser
-}
-
-// RemoveUserIDs removes the "user" edge to the User entity by IDs.
-func (m *RateMutation) RemoveUserIDs(ids ...uuid.UUID) {
-	if m.removeduser == nil {
-		m.removeduser = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.removeduser[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedUser returns the removed IDs of the "user" edge to the User entity.
-func (m *RateMutation) RemovedUserIDs() (ids []uuid.UUID) {
-	for id := range m.removeduser {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// UserIDs returns the "user" edge IDs in the mutation.
-func (m *RateMutation) UserIDs() (ids []uuid.UUID) {
-	for id := range m.user {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetUser resets all changes to the "user" edge.
-func (m *RateMutation) ResetUser() {
-	m.user = nil
-	m.cleareduser = false
-	m.removeduser = nil
-}
-
 // Op returns the operation name.
 func (m *RateMutation) Op() Op {
 	return m.op
@@ -2726,12 +2703,9 @@ func (m *RateMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *RateMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 1)
 	if m.rate_id != nil {
 		edges = append(edges, rate.EdgeRateID)
-	}
-	if m.user != nil {
-		edges = append(edges, rate.EdgeUser)
 	}
 	return edges
 }
@@ -2746,24 +2720,15 @@ func (m *RateMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case rate.EdgeUser:
-		ids := make([]ent.Value, 0, len(m.user))
-		for id := range m.user {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *RateMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 1)
 	if m.removedrate_id != nil {
 		edges = append(edges, rate.EdgeRateID)
-	}
-	if m.removeduser != nil {
-		edges = append(edges, rate.EdgeUser)
 	}
 	return edges
 }
@@ -2778,24 +2743,15 @@ func (m *RateMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case rate.EdgeUser:
-		ids := make([]ent.Value, 0, len(m.removeduser))
-		for id := range m.removeduser {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *RateMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 1)
 	if m.clearedrate_id {
 		edges = append(edges, rate.EdgeRateID)
-	}
-	if m.cleareduser {
-		edges = append(edges, rate.EdgeUser)
 	}
 	return edges
 }
@@ -2806,8 +2762,6 @@ func (m *RateMutation) EdgeCleared(name string) bool {
 	switch name {
 	case rate.EdgeRateID:
 		return m.clearedrate_id
-	case rate.EdgeUser:
-		return m.cleareduser
 	}
 	return false
 }
@@ -2827,9 +2781,6 @@ func (m *RateMutation) ResetEdge(name string) error {
 	case rate.EdgeRateID:
 		m.ResetRateID()
 		return nil
-	case rate.EdgeUser:
-		m.ResetUser()
-		return nil
 	}
 	return fmt.Errorf("unknown Rate edge %s", name)
 }
@@ -2847,6 +2798,9 @@ type RatePriceMutation struct {
 	clearedid_rate  bool
 	id_price        *uuid.UUID
 	clearedid_price bool
+	user            map[uuid.UUID]struct{}
+	removeduser     map[uuid.UUID]struct{}
+	cleareduser     bool
 	done            bool
 	oldValue        func(context.Context) (*RatePrice, error)
 	predicates      []predicate.RatePrice
@@ -3087,6 +3041,59 @@ func (m *RatePriceMutation) ResetIDPrice() {
 	m.clearedid_price = false
 }
 
+// AddUserIDs adds the "user" edge to the User entity by ids.
+func (m *RatePriceMutation) AddUserIDs(ids ...uuid.UUID) {
+	if m.user == nil {
+		m.user = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.user[ids[i]] = struct{}{}
+	}
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *RatePriceMutation) ClearUser() {
+	m.cleareduser = true
+}
+
+// UserCleared returns if the "user" edge to the User entity was cleared.
+func (m *RatePriceMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// RemoveUserIDs removes the "user" edge to the User entity by IDs.
+func (m *RatePriceMutation) RemoveUserIDs(ids ...uuid.UUID) {
+	if m.removeduser == nil {
+		m.removeduser = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.removeduser[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedUser returns the removed IDs of the "user" edge to the User entity.
+func (m *RatePriceMutation) RemovedUserIDs() (ids []uuid.UUID) {
+	for id := range m.removeduser {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+func (m *RatePriceMutation) UserIDs() (ids []uuid.UUID) {
+	for id := range m.user {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *RatePriceMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+	m.removeduser = nil
+}
+
 // Op returns the operation name.
 func (m *RatePriceMutation) Op() Op {
 	return m.op
@@ -3217,12 +3224,15 @@ func (m *RatePriceMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *RatePriceMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.id_rate != nil {
 		edges = append(edges, rateprice.EdgeIDRate)
 	}
 	if m.id_price != nil {
 		edges = append(edges, rateprice.EdgeIDPrice)
+	}
+	if m.user != nil {
+		edges = append(edges, rateprice.EdgeUser)
 	}
 	return edges
 }
@@ -3239,13 +3249,22 @@ func (m *RatePriceMutation) AddedIDs(name string) []ent.Value {
 		if id := m.id_price; id != nil {
 			return []ent.Value{*id}
 		}
+	case rateprice.EdgeUser:
+		ids := make([]ent.Value, 0, len(m.user))
+		for id := range m.user {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *RatePriceMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
+	if m.removeduser != nil {
+		edges = append(edges, rateprice.EdgeUser)
+	}
 	return edges
 }
 
@@ -3253,18 +3272,27 @@ func (m *RatePriceMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *RatePriceMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
+	case rateprice.EdgeUser:
+		ids := make([]ent.Value, 0, len(m.removeduser))
+		for id := range m.removeduser {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *RatePriceMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedid_rate {
 		edges = append(edges, rateprice.EdgeIDRate)
 	}
 	if m.clearedid_price {
 		edges = append(edges, rateprice.EdgeIDPrice)
+	}
+	if m.cleareduser {
+		edges = append(edges, rateprice.EdgeUser)
 	}
 	return edges
 }
@@ -3277,6 +3305,8 @@ func (m *RatePriceMutation) EdgeCleared(name string) bool {
 		return m.clearedid_rate
 	case rateprice.EdgeIDPrice:
 		return m.clearedid_price
+	case rateprice.EdgeUser:
+		return m.cleareduser
 	}
 	return false
 }
@@ -3304,6 +3334,9 @@ func (m *RatePriceMutation) ResetEdge(name string) error {
 		return nil
 	case rateprice.EdgeIDPrice:
 		m.ResetIDPrice()
+		return nil
+	case rateprice.EdgeUser:
+		m.ResetUser()
 		return nil
 	}
 	return fmt.Errorf("unknown RatePrice edge %s", name)
@@ -3652,17 +3685,17 @@ func (m *UserMutation) ResetMessages() {
 	m.removedmessages = nil
 }
 
-// SetRateIDID sets the "rate_id" edge to the Rate entity by id.
+// SetRateIDID sets the "rate_id" edge to the RatePrice entity by id.
 func (m *UserMutation) SetRateIDID(id uuid.UUID) {
 	m.rate_id = &id
 }
 
-// ClearRateID clears the "rate_id" edge to the Rate entity.
+// ClearRateID clears the "rate_id" edge to the RatePrice entity.
 func (m *UserMutation) ClearRateID() {
 	m.clearedrate_id = true
 }
 
-// RateIDCleared returns if the "rate_id" edge to the Rate entity was cleared.
+// RateIDCleared returns if the "rate_id" edge to the RatePrice entity was cleared.
 func (m *UserMutation) RateIDCleared() bool {
 	return m.clearedrate_id
 }

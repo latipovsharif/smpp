@@ -9,6 +9,7 @@ import (
 	"smpp/ent/price"
 	"smpp/ent/rate"
 	"smpp/ent/rateprice"
+	"smpp/ent/user"
 	"time"
 
 	"github.com/facebook/ent/dialect/sql"
@@ -96,6 +97,21 @@ func (rpu *RatePriceUpdate) SetIDPrice(p *Price) *RatePriceUpdate {
 	return rpu.SetIDPriceID(p.ID)
 }
 
+// AddUserIDs adds the "user" edge to the User entity by IDs.
+func (rpu *RatePriceUpdate) AddUserIDs(ids ...uuid.UUID) *RatePriceUpdate {
+	rpu.mutation.AddUserIDs(ids...)
+	return rpu
+}
+
+// AddUser adds the "user" edges to the User entity.
+func (rpu *RatePriceUpdate) AddUser(u ...*User) *RatePriceUpdate {
+	ids := make([]uuid.UUID, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return rpu.AddUserIDs(ids...)
+}
+
 // Mutation returns the RatePriceMutation object of the builder.
 func (rpu *RatePriceUpdate) Mutation() *RatePriceMutation {
 	return rpu.mutation
@@ -111,6 +127,27 @@ func (rpu *RatePriceUpdate) ClearIDRate() *RatePriceUpdate {
 func (rpu *RatePriceUpdate) ClearIDPrice() *RatePriceUpdate {
 	rpu.mutation.ClearIDPrice()
 	return rpu
+}
+
+// ClearUser clears all "user" edges to the User entity.
+func (rpu *RatePriceUpdate) ClearUser() *RatePriceUpdate {
+	rpu.mutation.ClearUser()
+	return rpu
+}
+
+// RemoveUserIDs removes the "user" edge to User entities by IDs.
+func (rpu *RatePriceUpdate) RemoveUserIDs(ids ...uuid.UUID) *RatePriceUpdate {
+	rpu.mutation.RemoveUserIDs(ids...)
+	return rpu
+}
+
+// RemoveUser removes "user" edges to User entities.
+func (rpu *RatePriceUpdate) RemoveUser(u ...*User) *RatePriceUpdate {
+	ids := make([]uuid.UUID, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return rpu.RemoveUserIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -266,6 +303,60 @@ func (rpu *RatePriceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if rpu.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   rateprice.UserTable,
+			Columns: []string{rateprice.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: user.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := rpu.mutation.RemovedUserIDs(); len(nodes) > 0 && !rpu.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   rateprice.UserTable,
+			Columns: []string{rateprice.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := rpu.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   rateprice.UserTable,
+			Columns: []string{rateprice.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, rpu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{rateprice.Label}
@@ -350,6 +441,21 @@ func (rpuo *RatePriceUpdateOne) SetIDPrice(p *Price) *RatePriceUpdateOne {
 	return rpuo.SetIDPriceID(p.ID)
 }
 
+// AddUserIDs adds the "user" edge to the User entity by IDs.
+func (rpuo *RatePriceUpdateOne) AddUserIDs(ids ...uuid.UUID) *RatePriceUpdateOne {
+	rpuo.mutation.AddUserIDs(ids...)
+	return rpuo
+}
+
+// AddUser adds the "user" edges to the User entity.
+func (rpuo *RatePriceUpdateOne) AddUser(u ...*User) *RatePriceUpdateOne {
+	ids := make([]uuid.UUID, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return rpuo.AddUserIDs(ids...)
+}
+
 // Mutation returns the RatePriceMutation object of the builder.
 func (rpuo *RatePriceUpdateOne) Mutation() *RatePriceMutation {
 	return rpuo.mutation
@@ -365,6 +471,27 @@ func (rpuo *RatePriceUpdateOne) ClearIDRate() *RatePriceUpdateOne {
 func (rpuo *RatePriceUpdateOne) ClearIDPrice() *RatePriceUpdateOne {
 	rpuo.mutation.ClearIDPrice()
 	return rpuo
+}
+
+// ClearUser clears all "user" edges to the User entity.
+func (rpuo *RatePriceUpdateOne) ClearUser() *RatePriceUpdateOne {
+	rpuo.mutation.ClearUser()
+	return rpuo
+}
+
+// RemoveUserIDs removes the "user" edge to User entities by IDs.
+func (rpuo *RatePriceUpdateOne) RemoveUserIDs(ids ...uuid.UUID) *RatePriceUpdateOne {
+	rpuo.mutation.RemoveUserIDs(ids...)
+	return rpuo
+}
+
+// RemoveUser removes "user" edges to User entities.
+func (rpuo *RatePriceUpdateOne) RemoveUser(u ...*User) *RatePriceUpdateOne {
+	ids := make([]uuid.UUID, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return rpuo.RemoveUserIDs(ids...)
 }
 
 // Save executes the query and returns the updated RatePrice entity.
@@ -510,6 +637,60 @@ func (rpuo *RatePriceUpdateOne) sqlSave(ctx context.Context) (_node *RatePrice, 
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: price.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if rpuo.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   rateprice.UserTable,
+			Columns: []string{rateprice.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: user.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := rpuo.mutation.RemovedUserIDs(); len(nodes) > 0 && !rpuo.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   rateprice.UserTable,
+			Columns: []string{rateprice.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := rpuo.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   rateprice.UserTable,
+			Columns: []string{rateprice.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: user.FieldID,
 				},
 			},
 		}

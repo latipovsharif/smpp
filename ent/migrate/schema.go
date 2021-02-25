@@ -50,7 +50,7 @@ var (
 		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "min", Type: field.TypeInt32},
 		{Name: "max", Type: field.TypeInt32},
-		{Name: "price", Type: field.TypeString, Unique: true},
+		{Name: "price", Type: field.TypeInt16, Unique: true},
 		{Name: "create_at", Type: field.TypeTime},
 		{Name: "update_at", Type: field.TypeTime},
 	}
@@ -135,10 +135,10 @@ var (
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "users_rates_user",
+				Symbol:  "users_rate_prices_user",
 				Columns: []*schema.Column{UsersColumns[4]},
 
-				RefColumns: []*schema.Column{RatesColumns[0]},
+				RefColumns: []*schema.Column{RatePricesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -191,7 +191,7 @@ func init() {
 	MessagesTable.ForeignKeys[1].RefTable = UsersTable
 	RatePricesTable.ForeignKeys[0].RefTable = PricesTable
 	RatePricesTable.ForeignKeys[1].RefTable = RatesTable
-	UsersTable.ForeignKeys[0].RefTable = RatesTable
+	UsersTable.ForeignKeys[0].RefTable = RatePricesTable
 	UserMonthMessagesTable.ForeignKeys[0].RefTable = ProvidesTable
 	UserMonthMessagesTable.ForeignKeys[1].RefTable = UsersTable
 }

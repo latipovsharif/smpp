@@ -31,7 +31,5 @@ func (Rate) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("rate_id", RatePrice.Type).
 			StorageKey(edge.Column("rate_id")),
-		edge.To("user", User.Type).
-			StorageKey(edge.Column("rate_id")),
 	}
 }

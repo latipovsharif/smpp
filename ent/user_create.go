@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"smpp/ent/messages"
-	"smpp/ent/rate"
+	"smpp/ent/rateprice"
 	"smpp/ent/user"
 	"smpp/ent/usermonthmessage"
 	"time"
@@ -102,13 +102,13 @@ func (uc *UserCreate) AddMessages(m ...*Messages) *UserCreate {
 	return uc.AddMessageIDs(ids...)
 }
 
-// SetRateIDID sets the "rate_id" edge to the Rate entity by ID.
+// SetRateIDID sets the "rate_id" edge to the RatePrice entity by ID.
 func (uc *UserCreate) SetRateIDID(id uuid.UUID) *UserCreate {
 	uc.mutation.SetRateIDID(id)
 	return uc
 }
 
-// SetNillableRateIDID sets the "rate_id" edge to the Rate entity by ID if the given value is not nil.
+// SetNillableRateIDID sets the "rate_id" edge to the RatePrice entity by ID if the given value is not nil.
 func (uc *UserCreate) SetNillableRateIDID(id *uuid.UUID) *UserCreate {
 	if id != nil {
 		uc = uc.SetRateIDID(*id)
@@ -116,8 +116,8 @@ func (uc *UserCreate) SetNillableRateIDID(id *uuid.UUID) *UserCreate {
 	return uc
 }
 
-// SetRateID sets the "rate_id" edge to the Rate entity.
-func (uc *UserCreate) SetRateID(r *Rate) *UserCreate {
+// SetRateID sets the "rate_id" edge to the RatePrice entity.
+func (uc *UserCreate) SetRateID(r *RatePrice) *UserCreate {
 	return uc.SetRateIDID(r.ID)
 }
 
@@ -303,7 +303,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: rate.FieldID,
+					Column: rateprice.FieldID,
 				},
 			},
 		}

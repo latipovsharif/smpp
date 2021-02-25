@@ -10,7 +10,7 @@ import (
 	"math"
 	"smpp/ent/messages"
 	"smpp/ent/predicate"
-	"smpp/ent/rate"
+	"smpp/ent/rateprice"
 	"smpp/ent/user"
 	"smpp/ent/usermonthmessage"
 
@@ -31,7 +31,7 @@ type UserQuery struct {
 	// eager-loading edges.
 	withUserMessages *UserMonthMessageQuery
 	withMessages     *MessagesQuery
-	withRateID       *RateQuery
+	withRateID       *RatePriceQuery
 	withFKs          bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -107,8 +107,8 @@ func (uq *UserQuery) QueryMessages() *MessagesQuery {
 }
 
 // QueryRateID chains the current query on the "rate_id" edge.
-func (uq *UserQuery) QueryRateID() *RateQuery {
-	query := &RateQuery{config: uq.config}
+func (uq *UserQuery) QueryRateID() *RatePriceQuery {
+	query := &RatePriceQuery{config: uq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := uq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -119,7 +119,7 @@ func (uq *UserQuery) QueryRateID() *RateQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(rate.Table, rate.FieldID),
+			sqlgraph.To(rateprice.Table, rateprice.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, user.RateIDTable, user.RateIDColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
@@ -342,8 +342,8 @@ func (uq *UserQuery) WithMessages(opts ...func(*MessagesQuery)) *UserQuery {
 
 // WithRateID tells the query-builder to eager-load the nodes that are connected to
 // the "rate_id" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithRateID(opts ...func(*RateQuery)) *UserQuery {
-	query := &RateQuery{config: uq.config}
+func (uq *UserQuery) WithRateID(opts ...func(*RatePriceQuery)) *UserQuery {
+	query := &RatePriceQuery{config: uq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -516,7 +516,7 @@ func (uq *UserQuery) sqlAll(ctx context.Context) ([]*User, error) {
 				nodeids[*fk] = append(nodeids[*fk], nodes[i])
 			}
 		}
-		query.Where(rate.IDIn(ids...))
+		query.Where(rateprice.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err

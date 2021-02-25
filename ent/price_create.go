@@ -35,8 +35,8 @@ func (pc *PriceCreate) SetMax(i int32) *PriceCreate {
 }
 
 // SetPrice sets the "price" field.
-func (pc *PriceCreate) SetPrice(s string) *PriceCreate {
-	pc.mutation.SetPrice(s)
+func (pc *PriceCreate) SetPrice(i int16) *PriceCreate {
+	pc.mutation.SetPrice(i)
 	return pc
 }
 
@@ -219,7 +219,7 @@ func (pc *PriceCreate) createSpec() (*Price, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := pc.mutation.Price(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
+			Type:   field.TypeInt16,
 			Value:  value,
 			Column: price.FieldPrice,
 		})

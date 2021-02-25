@@ -109,7 +109,7 @@ func Max(v int32) predicate.Price {
 }
 
 // Price applies equality check predicate on the "price" field. It's identical to PriceEQ.
-func Price(v string) predicate.Price {
+func Price(v int16) predicate.Price {
 	return predicate.Price(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldPrice), v))
 	})
@@ -282,21 +282,21 @@ func MaxLTE(v int32) predicate.Price {
 }
 
 // PriceEQ applies the EQ predicate on the "price" field.
-func PriceEQ(v string) predicate.Price {
+func PriceEQ(v int16) predicate.Price {
 	return predicate.Price(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldPrice), v))
 	})
 }
 
 // PriceNEQ applies the NEQ predicate on the "price" field.
-func PriceNEQ(v string) predicate.Price {
+func PriceNEQ(v int16) predicate.Price {
 	return predicate.Price(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldPrice), v))
 	})
 }
 
 // PriceIn applies the In predicate on the "price" field.
-func PriceIn(vs ...string) predicate.Price {
+func PriceIn(vs ...int16) predicate.Price {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -313,7 +313,7 @@ func PriceIn(vs ...string) predicate.Price {
 }
 
 // PriceNotIn applies the NotIn predicate on the "price" field.
-func PriceNotIn(vs ...string) predicate.Price {
+func PriceNotIn(vs ...int16) predicate.Price {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -330,65 +330,30 @@ func PriceNotIn(vs ...string) predicate.Price {
 }
 
 // PriceGT applies the GT predicate on the "price" field.
-func PriceGT(v string) predicate.Price {
+func PriceGT(v int16) predicate.Price {
 	return predicate.Price(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldPrice), v))
 	})
 }
 
 // PriceGTE applies the GTE predicate on the "price" field.
-func PriceGTE(v string) predicate.Price {
+func PriceGTE(v int16) predicate.Price {
 	return predicate.Price(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldPrice), v))
 	})
 }
 
 // PriceLT applies the LT predicate on the "price" field.
-func PriceLT(v string) predicate.Price {
+func PriceLT(v int16) predicate.Price {
 	return predicate.Price(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldPrice), v))
 	})
 }
 
 // PriceLTE applies the LTE predicate on the "price" field.
-func PriceLTE(v string) predicate.Price {
+func PriceLTE(v int16) predicate.Price {
 	return predicate.Price(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldPrice), v))
-	})
-}
-
-// PriceContains applies the Contains predicate on the "price" field.
-func PriceContains(v string) predicate.Price {
-	return predicate.Price(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldPrice), v))
-	})
-}
-
-// PriceHasPrefix applies the HasPrefix predicate on the "price" field.
-func PriceHasPrefix(v string) predicate.Price {
-	return predicate.Price(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldPrice), v))
-	})
-}
-
-// PriceHasSuffix applies the HasSuffix predicate on the "price" field.
-func PriceHasSuffix(v string) predicate.Price {
-	return predicate.Price(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldPrice), v))
-	})
-}
-
-// PriceEqualFold applies the EqualFold predicate on the "price" field.
-func PriceEqualFold(v string) predicate.Price {
-	return predicate.Price(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldPrice), v))
-	})
-}
-
-// PriceContainsFold applies the ContainsFold predicate on the "price" field.
-func PriceContainsFold(v string) predicate.Price {
-	return predicate.Price(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldPrice), v))
 	})
 }
 

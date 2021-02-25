@@ -36,7 +36,7 @@ func (User) Edges() []ent.Edge {
 		edge.To("messages", Messages.Type).
 			StorageKey(edge.Column("user_id")),
 		//rate in user
-		edge.From("rate_id", Rate.Type).
+		edge.From("rate_id", RatePrice.Type).
 			Ref("user").
 			Unique(),
 	}

@@ -32,11 +32,9 @@ type Rate struct {
 type RateEdges struct {
 	// RateID holds the value of the rate_id edge.
 	RateID []*RatePrice
-	// User holds the value of the user edge.
-	User []*User
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [1]bool
 }
 
 // RateIDOrErr returns the RateID value or an error if the edge
@@ -46,15 +44,6 @@ func (e RateEdges) RateIDOrErr() ([]*RatePrice, error) {
 		return e.RateID, nil
 	}
 	return nil, &NotLoadedError{edge: "rate_id"}
-}
-
-// UserOrErr returns the User value or an error if the edge
-// was not loaded in eager-loading.
-func (e RateEdges) UserOrErr() ([]*User, error) {
-	if e.loadedTypes[1] {
-		return e.User, nil
-	}
-	return nil, &NotLoadedError{edge: "user"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -115,11 +104,6 @@ func (r *Rate) assignValues(columns []string, values []interface{}) error {
 // QueryRateID queries the "rate_id" edge of the Rate entity.
 func (r *Rate) QueryRateID() *RatePriceQuery {
 	return (&RateClient{config: r.config}).QueryRateID(r)
-}
-
-// QueryUser queries the "user" edge of the Rate entity.
-func (r *Rate) QueryUser() *UserQuery {
-	return (&RateClient{config: r.config}).QueryUser(r)
 }
 
 // Update returns a builder for updating this Rate.

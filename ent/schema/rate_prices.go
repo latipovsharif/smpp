@@ -34,5 +34,7 @@ func (RatePrice) Edges() []ent.Edge {
 		edge.From("id_price", Price.Type).
 			Ref("price_id").
 			Unique(),
+		edge.To("user", User.Type).
+			StorageKey(edge.Column("rate_id")),
 	}
 }

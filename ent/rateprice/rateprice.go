@@ -22,6 +22,8 @@ const (
 	EdgeIDRate = "id_rate"
 	// EdgeIDPrice holds the string denoting the id_price edge name in mutations.
 	EdgeIDPrice = "id_price"
+	// EdgeUser holds the string denoting the user edge name in mutations.
+	EdgeUser = "user"
 
 	// Table holds the table name of the rateprice in the database.
 	Table = "rate_prices"
@@ -39,6 +41,13 @@ const (
 	IDPriceInverseTable = "prices"
 	// IDPriceColumn is the table column denoting the id_price relation/edge.
 	IDPriceColumn = "price_id"
+	// UserTable is the table the holds the user relation/edge.
+	UserTable = "users"
+	// UserInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	UserInverseTable = "users"
+	// UserColumn is the table column denoting the user relation/edge.
+	UserColumn = "rate_id"
 )
 
 // Columns holds all SQL columns for rateprice fields.

@@ -9,6 +9,7 @@ import (
 	"smpp/ent/price"
 	"smpp/ent/rate"
 	"smpp/ent/rateprice"
+	"smpp/ent/user"
 	"time"
 
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
@@ -93,6 +94,21 @@ func (rpc *RatePriceCreate) SetNillableIDPriceID(id *uuid.UUID) *RatePriceCreate
 // SetIDPrice sets the "id_price" edge to the Price entity.
 func (rpc *RatePriceCreate) SetIDPrice(p *Price) *RatePriceCreate {
 	return rpc.SetIDPriceID(p.ID)
+}
+
+// AddUserIDs adds the "user" edge to the User entity by IDs.
+func (rpc *RatePriceCreate) AddUserIDs(ids ...uuid.UUID) *RatePriceCreate {
+	rpc.mutation.AddUserIDs(ids...)
+	return rpc
+}
+
+// AddUser adds the "user" edges to the User entity.
+func (rpc *RatePriceCreate) AddUser(u ...*User) *RatePriceCreate {
+	ids := make([]uuid.UUID, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return rpc.AddUserIDs(ids...)
 }
 
 // Mutation returns the RatePriceMutation object of the builder.
@@ -244,6 +260,25 @@ func (rpc *RatePriceCreate) createSpec() (*RatePrice, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: price.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := rpc.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   rateprice.UserTable,
+			Columns: []string{rateprice.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: user.FieldID,
 				},
 			},
 		}

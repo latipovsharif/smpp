@@ -603,22 +603,6 @@ func (c *RateClient) QueryRateID(r *Rate) *RatePriceQuery {
 	return query
 }
 
-// QueryUser queries the user edge of a Rate.
-func (c *RateClient) QueryUser(r *Rate) *UserQuery {
-	query := &UserQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := r.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(rate.Table, rate.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, rate.UserTable, rate.UserColumn),
-		)
-		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *RateClient) Hooks() []Hook {
 	return c.hooks.Rate
@@ -732,6 +716,22 @@ func (c *RatePriceClient) QueryIDPrice(rp *RatePrice) *PriceQuery {
 			sqlgraph.From(rateprice.Table, rateprice.FieldID, id),
 			sqlgraph.To(price.Table, price.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, rateprice.IDPriceTable, rateprice.IDPriceColumn),
+		)
+		fromV = sqlgraph.Neighbors(rp.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUser queries the user edge of a RatePrice.
+func (c *RatePriceClient) QueryUser(rp *RatePrice) *UserQuery {
+	query := &UserQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := rp.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(rateprice.Table, rateprice.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, rateprice.UserTable, rateprice.UserColumn),
 		)
 		fromV = sqlgraph.Neighbors(rp.driver.Dialect(), step)
 		return fromV, nil
@@ -860,13 +860,13 @@ func (c *UserClient) QueryMessages(u *User) *MessagesQuery {
 }
 
 // QueryRateID queries the rate_id edge of a User.
-func (c *UserClient) QueryRateID(u *User) *RateQuery {
-	query := &RateQuery{config: c.config}
+func (c *UserClient) QueryRateID(u *User) *RatePriceQuery {
+	query := &RatePriceQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := u.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(rate.Table, rate.FieldID),
+			sqlgraph.To(rateprice.Table, rateprice.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, user.RateIDTable, user.RateIDColumn),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)

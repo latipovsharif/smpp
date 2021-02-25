@@ -22,7 +22,7 @@ type Price struct {
 	// Max holds the value of the "max" field.
 	Max int32 `json:"max,omitempty"`
 	// Price holds the value of the "price" field.
-	Price string `json:"price,omitempty"`
+	Price int16 `json:"price,omitempty"`
 	// CreateAt holds the value of the "create_at" field.
 	CreateAt time.Time `json:"create_at,omitempty"`
 	// UpdateAt holds the value of the "update_at" field.
@@ -55,10 +55,8 @@ func (*Price) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case price.FieldMin, price.FieldMax:
+		case price.FieldMin, price.FieldMax, price.FieldPrice:
 			values[i] = &sql.NullInt64{}
-		case price.FieldPrice:
-			values[i] = &sql.NullString{}
 		case price.FieldCreateAt, price.FieldUpdateAt:
 			values[i] = &sql.NullTime{}
 		case price.FieldID:
@@ -97,10 +95,10 @@ func (pr *Price) assignValues(columns []string, values []interface{}) error {
 				pr.Max = int32(value.Int64)
 			}
 		case price.FieldPrice:
-			if value, ok := values[i].(*sql.NullString); !ok {
+			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field price", values[i])
 			} else if value.Valid {
-				pr.Price = value.String
+				pr.Price = int16(value.Int64)
 			}
 		case price.FieldCreateAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -152,7 +150,7 @@ func (pr *Price) String() string {
 	builder.WriteString(", max=")
 	builder.WriteString(fmt.Sprintf("%v", pr.Max))
 	builder.WriteString(", price=")
-	builder.WriteString(pr.Price)
+	builder.WriteString(fmt.Sprintf("%v", pr.Price))
 	builder.WriteString(", create_at=")
 	builder.WriteString(pr.CreateAt.Format(time.ANSIC))
 	builder.WriteString(", update_at=")

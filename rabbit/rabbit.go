@@ -3,8 +3,12 @@ package rabbit
 import (
 	"context"
 	"encoding/json"
+	"os"
 	"smpp/ent"
+	"smpp/ent/user"
+	"time"
 
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/pkg/errors"
@@ -28,7 +32,8 @@ type Session struct {
 
 // NewSession return new rabbitmq session
 func NewSession(db *ent.Client) (*Session, error) {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+	urlAmqp := os.Getenv("RABBITMQ_HOST")
+	conn, err := amqp.Dial(urlAmqp)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot connect to rabbitmq")
 	}
@@ -77,12 +82,23 @@ func (s *Session) Consume(c chan<- ent.Messages) {
 	for d := range msgs {
 		ctx := context.Background()
 		message := ent.Messages{}
-		if err := json.Unmarshal(d.Body, &message); err != nil {
+		if err = json.Unmarshal(d.Body, &message); err != nil {
 			log.Errorf("cannot unmarshal message: %v", err)
 			if err := d.Nack(false, true); err != nil {
 				log.Errorf("cannot nack message: %v", err)
 			}
+			continue
 		}
+		userID := uuid.MustParse(message.UserId.String())
+		providerID := uuid.MustParse(message.ProviderId.String())
+
+		if err != nil {
+			log.Errorf("cannot select user: %v", err)
+		}
+		if s.chekBalans(ctx, userID) {
+			message.State = int(StateNew)
+		}
+
 		if _, err = s.db.Messages.Create().
 			SetSequenceNumber(message.SequenceNumber).
 			SetExternalID(message.ExternalID).
@@ -91,23 +107,22 @@ func (s *Session) Consume(c chan<- ent.Messages) {
 			SetSrc(message.Src).
 			SetState(message.State).
 			SetSmscMessageID(message.SmscMessageID).
-			SetProviderIDID(message.Edges.ProviderID.ID).
-			SetUserID(message.Edges.UserID).
+			SetProviderIDID(providerID).
+			SetUserIDID(userID).
 			Save(ctx); err != nil {
 			log.Errorf("cannot insert message: %v", err)
+			d.Nack(false, true)
 		}
-
-		// if _, err := s.db.Messages(&message).Insert(); err != nil {
-		// 	log.Errorf("cannot insert message: %v", err)
-		// 	d.Nack(false, true)
-		// }
-
-		if err := d.Ack(false); err != nil {
+		s.createUserMessage(ctx, userID, providerID)
+		if err = d.Ack(false); err != nil {
 			log.Error("cannot ack message")
 		}
-
+		if message.State == 0 {
+			continue
+		}
 		c <- message
 	}
+
 	<-s.done
 }
 
@@ -116,4 +131,32 @@ func (s *Session) Close() {
 	s.channel.Close()
 	s.connection.Close()
 	s.done <- true
+}
+
+func (s *Session) chekBalans(ctx context.Context, userID uuid.UUID) bool {
+	usr, _ := s.db.User.Query().
+		Where(user.IDEQ(userID)).
+		First(ctx)
+
+	messagePrice, _ := s.db.User.Query().Where(user.IDEQ(userID)).QueryRateID().QueryIDPrice().First(ctx)
+	if usr.Balance > messagePrice.Price {
+		if _, err := s.db.User.Update().Where(user.ID(usr.ID)).
+			SetBalance(usr.Balance - messagePrice.Price).
+			SetUpdateAt(time.Now()).
+			Save(ctx); err != nil {
+			log.Errorf("cannot Update user balans: %v", err)
+			return false
+		}
+
+		return true
+	}
+	return false
+}
+
+func (s *Session) createUserMessage(ctx context.Context, userID uuid.UUID, providerID uuid.UUID) {
+	if _, err := s.db.UserMonthMessage.Create().
+		SetUserIDID(userID).
+		SetProviderIDID(providerID).Save(ctx); err != nil {
+		log.Errorf("cannot insert User Month Message: %v", err)
+	}
 }

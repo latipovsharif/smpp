@@ -11,7 +11,6 @@ import (
 	"smpp/ent/predicate"
 	"smpp/ent/rate"
 	"smpp/ent/rateprice"
-	"smpp/ent/user"
 
 	"github.com/facebook/ent/dialect/sql"
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
@@ -29,7 +28,6 @@ type RateQuery struct {
 	predicates []predicate.Rate
 	// eager-loading edges.
 	withRateID *RatePriceQuery
-	withUser   *UserQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -74,28 +72,6 @@ func (rq *RateQuery) QueryRateID() *RatePriceQuery {
 			sqlgraph.From(rate.Table, rate.FieldID, selector),
 			sqlgraph.To(rateprice.Table, rateprice.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, rate.RateIDTable, rate.RateIDColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryUser chains the current query on the "user" edge.
-func (rq *RateQuery) QueryUser() *UserQuery {
-	query := &UserQuery{config: rq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := rq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := rq.sqlQuery()
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(rate.Table, rate.FieldID, selector),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, rate.UserTable, rate.UserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
 		return fromU, nil
@@ -285,7 +261,6 @@ func (rq *RateQuery) Clone() *RateQuery {
 		order:      append([]OrderFunc{}, rq.order...),
 		predicates: append([]predicate.Rate{}, rq.predicates...),
 		withRateID: rq.withRateID.Clone(),
-		withUser:   rq.withUser.Clone(),
 		// clone intermediate query.
 		sql:  rq.sql.Clone(),
 		path: rq.path,
@@ -300,17 +275,6 @@ func (rq *RateQuery) WithRateID(opts ...func(*RatePriceQuery)) *RateQuery {
 		opt(query)
 	}
 	rq.withRateID = query
-	return rq
-}
-
-// WithUser tells the query-builder to eager-load the nodes that are connected to
-// the "user" edge. The optional arguments are used to configure the query builder of the edge.
-func (rq *RateQuery) WithUser(opts ...func(*UserQuery)) *RateQuery {
-	query := &UserQuery{config: rq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	rq.withUser = query
 	return rq
 }
 
@@ -379,9 +343,8 @@ func (rq *RateQuery) sqlAll(ctx context.Context) ([]*Rate, error) {
 	var (
 		nodes       = []*Rate{}
 		_spec       = rq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [1]bool{
 			rq.withRateID != nil,
-			rq.withUser != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
@@ -430,35 +393,6 @@ func (rq *RateQuery) sqlAll(ctx context.Context) ([]*Rate, error) {
 				return nil, fmt.Errorf(`unexpected foreign-key "rate_id" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.RateID = append(node.Edges.RateID, n)
-		}
-	}
-
-	if query := rq.withUser; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Rate)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.User = []*User{}
-		}
-		query.withFKs = true
-		query.Where(predicate.User(func(s *sql.Selector) {
-			s.Where(sql.InValues(rate.UserColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, n := range neighbors {
-			fk := n.rate_id
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "rate_id" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "rate_id" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.User = append(node.Edges.User, n)
 		}
 	}
 

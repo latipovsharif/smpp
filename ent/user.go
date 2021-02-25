@@ -4,7 +4,7 @@ package ent
 
 import (
 	"fmt"
-	"smpp/ent/rate"
+	"smpp/ent/rateprice"
 	"smpp/ent/user"
 	"strings"
 	"time"
@@ -37,7 +37,7 @@ type UserEdges struct {
 	// Messages holds the value of the messages edge.
 	Messages []*Messages
 	// RateID holds the value of the rate_id edge.
-	RateID *Rate
+	RateID *RatePrice
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -63,12 +63,12 @@ func (e UserEdges) MessagesOrErr() ([]*Messages, error) {
 
 // RateIDOrErr returns the RateID value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e UserEdges) RateIDOrErr() (*Rate, error) {
+func (e UserEdges) RateIDOrErr() (*RatePrice, error) {
 	if e.loadedTypes[2] {
 		if e.RateID == nil {
 			// The edge rate_id was loaded in eager-loading,
 			// but was not found.
-			return nil, &NotFoundError{label: rate.Label}
+			return nil, &NotFoundError{label: rateprice.Label}
 		}
 		return e.RateID, nil
 	}
@@ -149,7 +149,7 @@ func (u *User) QueryMessages() *MessagesQuery {
 }
 
 // QueryRateID queries the "rate_id" edge of the User entity.
-func (u *User) QueryRateID() *RateQuery {
+func (u *User) QueryRateID() *RatePriceQuery {
 	return (&UserClient{config: u.config}).QueryRateID(u)
 }
 

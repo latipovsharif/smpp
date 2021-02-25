@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"smpp/ent/rate"
 	"smpp/ent/rateprice"
-	"smpp/ent/user"
 	"time"
 
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
@@ -76,21 +75,6 @@ func (rc *RateCreate) AddRateID(r ...*RatePrice) *RateCreate {
 		ids[i] = r[i].ID
 	}
 	return rc.AddRateIDIDs(ids...)
-}
-
-// AddUserIDs adds the "user" edge to the User entity by IDs.
-func (rc *RateCreate) AddUserIDs(ids ...uuid.UUID) *RateCreate {
-	rc.mutation.AddUserIDs(ids...)
-	return rc
-}
-
-// AddUser adds the "user" edges to the User entity.
-func (rc *RateCreate) AddUser(u ...*User) *RateCreate {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return rc.AddUserIDs(ids...)
 }
 
 // Mutation returns the RateMutation object of the builder.
@@ -234,25 +218,6 @@ func (rc *RateCreate) createSpec() (*Rate, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: rateprice.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := rc.mutation.UserIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   rate.UserTable,
-			Columns: []string{rate.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: user.FieldID,
 				},
 			},
 		}

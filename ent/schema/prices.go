@@ -22,7 +22,7 @@ func (Price) Fields() []ent.Field {
 			Unique(),
 		field.Int32("min"),
 		field.Int32("max"),
-		field.String("price").Unique(),
+		field.Int16("price").Unique(),
 		field.Time("create_at").Default(time.Now),
 		field.Time("update_at").Default(time.Now),
 	}

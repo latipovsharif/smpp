@@ -8,7 +8,6 @@ import (
 	"smpp/ent/predicate"
 	"smpp/ent/rate"
 	"smpp/ent/rateprice"
-	"smpp/ent/user"
 	"time"
 
 	"github.com/facebook/ent/dialect/sql"
@@ -79,21 +78,6 @@ func (ru *RateUpdate) AddRateID(r ...*RatePrice) *RateUpdate {
 	return ru.AddRateIDIDs(ids...)
 }
 
-// AddUserIDs adds the "user" edge to the User entity by IDs.
-func (ru *RateUpdate) AddUserIDs(ids ...uuid.UUID) *RateUpdate {
-	ru.mutation.AddUserIDs(ids...)
-	return ru
-}
-
-// AddUser adds the "user" edges to the User entity.
-func (ru *RateUpdate) AddUser(u ...*User) *RateUpdate {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return ru.AddUserIDs(ids...)
-}
-
 // Mutation returns the RateMutation object of the builder.
 func (ru *RateUpdate) Mutation() *RateMutation {
 	return ru.mutation
@@ -118,27 +102,6 @@ func (ru *RateUpdate) RemoveRateID(r ...*RatePrice) *RateUpdate {
 		ids[i] = r[i].ID
 	}
 	return ru.RemoveRateIDIDs(ids...)
-}
-
-// ClearUser clears all "user" edges to the User entity.
-func (ru *RateUpdate) ClearUser() *RateUpdate {
-	ru.mutation.ClearUser()
-	return ru
-}
-
-// RemoveUserIDs removes the "user" edge to User entities by IDs.
-func (ru *RateUpdate) RemoveUserIDs(ids ...uuid.UUID) *RateUpdate {
-	ru.mutation.RemoveUserIDs(ids...)
-	return ru
-}
-
-// RemoveUser removes "user" edges to User entities.
-func (ru *RateUpdate) RemoveUser(u ...*User) *RateUpdate {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return ru.RemoveUserIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -285,60 +248,6 @@ func (ru *RateUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ru.mutation.UserCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   rate.UserTable,
-			Columns: []string{rate.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: user.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ru.mutation.RemovedUserIDs(); len(nodes) > 0 && !ru.mutation.UserCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   rate.UserTable,
-			Columns: []string{rate.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ru.mutation.UserIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   rate.UserTable,
-			Columns: []string{rate.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if n, err = sqlgraph.UpdateNodes(ctx, ru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{rate.Label}
@@ -406,21 +315,6 @@ func (ruo *RateUpdateOne) AddRateID(r ...*RatePrice) *RateUpdateOne {
 	return ruo.AddRateIDIDs(ids...)
 }
 
-// AddUserIDs adds the "user" edge to the User entity by IDs.
-func (ruo *RateUpdateOne) AddUserIDs(ids ...uuid.UUID) *RateUpdateOne {
-	ruo.mutation.AddUserIDs(ids...)
-	return ruo
-}
-
-// AddUser adds the "user" edges to the User entity.
-func (ruo *RateUpdateOne) AddUser(u ...*User) *RateUpdateOne {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return ruo.AddUserIDs(ids...)
-}
-
 // Mutation returns the RateMutation object of the builder.
 func (ruo *RateUpdateOne) Mutation() *RateMutation {
 	return ruo.mutation
@@ -445,27 +339,6 @@ func (ruo *RateUpdateOne) RemoveRateID(r ...*RatePrice) *RateUpdateOne {
 		ids[i] = r[i].ID
 	}
 	return ruo.RemoveRateIDIDs(ids...)
-}
-
-// ClearUser clears all "user" edges to the User entity.
-func (ruo *RateUpdateOne) ClearUser() *RateUpdateOne {
-	ruo.mutation.ClearUser()
-	return ruo
-}
-
-// RemoveUserIDs removes the "user" edge to User entities by IDs.
-func (ruo *RateUpdateOne) RemoveUserIDs(ids ...uuid.UUID) *RateUpdateOne {
-	ruo.mutation.RemoveUserIDs(ids...)
-	return ruo
-}
-
-// RemoveUser removes "user" edges to User entities.
-func (ruo *RateUpdateOne) RemoveUser(u ...*User) *RateUpdateOne {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return ruo.RemoveUserIDs(ids...)
 }
 
 // Save executes the query and returns the updated Rate entity.
@@ -602,60 +475,6 @@ func (ruo *RateUpdateOne) sqlSave(ctx context.Context) (_node *Rate, err error) 
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: rateprice.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if ruo.mutation.UserCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   rate.UserTable,
-			Columns: []string{rate.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: user.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ruo.mutation.RemovedUserIDs(); len(nodes) > 0 && !ruo.mutation.UserCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   rate.UserTable,
-			Columns: []string{rate.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ruo.mutation.UserIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   rate.UserTable,
-			Columns: []string{rate.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: user.FieldID,
 				},
 			},
 		}

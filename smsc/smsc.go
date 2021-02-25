@@ -4,10 +4,10 @@ import (
 	"context"
 	"os"
 	"smpp/ent"
+	"smpp/ent/messages"
 	"smpp/rabbit"
 	"time"
 
-	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/linxGnu/gosmpp"
@@ -77,8 +77,10 @@ func handlePDU(db *ent.Client) func(pdu.PDU, bool) {
 		ctx := context.Background()
 		switch pd := p.(type) {
 		case *pdu.SubmitSMResp:
-			if _, err := db.Messages.UpdateOneID(uuid.MustParse(pd.MessageID)).
+			if _, err := db.Messages.Update().
+				Where(messages.SequenceNumber(pd.SequenceNumber)).
 				SetState(int(rabbit.StateDelivered)).
+				SetSmscMessageID(pd.MessageID).
 				SetUpdateAt(time.Now()).
 				Save(ctx); err != nil {
 				log.Errorf("cannot update message: %v", err)

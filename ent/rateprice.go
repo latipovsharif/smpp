@@ -36,9 +36,11 @@ type RatePriceEdges struct {
 	IDRate *Rate
 	// IDPrice holds the value of the id_price edge.
 	IDPrice *Price
+	// User holds the value of the user edge.
+	User []*User
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // IDRateOrErr returns the IDRate value or an error if the edge
@@ -67,6 +69,15 @@ func (e RatePriceEdges) IDPriceOrErr() (*Price, error) {
 		return e.IDPrice, nil
 	}
 	return nil, &NotLoadedError{edge: "id_price"}
+}
+
+// UserOrErr returns the User value or an error if the edge
+// was not loaded in eager-loading.
+func (e RatePriceEdges) UserOrErr() ([]*User, error) {
+	if e.loadedTypes[2] {
+		return e.User, nil
+	}
+	return nil, &NotLoadedError{edge: "user"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -140,6 +151,11 @@ func (rp *RatePrice) QueryIDRate() *RateQuery {
 // QueryIDPrice queries the "id_price" edge of the RatePrice entity.
 func (rp *RatePrice) QueryIDPrice() *PriceQuery {
 	return (&RatePriceClient{config: rp.config}).QueryIDPrice(rp)
+}
+
+// QueryUser queries the "user" edge of the RatePrice entity.
+func (rp *RatePrice) QueryUser() *UserQuery {
+	return (&RatePriceClient{config: rp.config}).QueryUser(rp)
 }
 
 // Update returns a builder for updating this RatePrice.

@@ -13,7 +13,7 @@ import (
 )
 
 var db *pg.DB
-var messages chan rabbit.Message
+var messages chan db.Message
 
 const logFilePath = "logs/smpp.log"
 const appVersion = "0.0.1"
@@ -38,11 +38,11 @@ func main() {
 
 	sigs := make(chan os.Signal)
 	signal.Notify(sigs, os.Interrupt, os.Kill)
-	messages := make(chan rabbit.Message)
+	messages := make(chan db.Message)
 
 	s := smsc.NewSession(db)
 
-	rs, err := rabbit.NewSession(db)
+	rs, err := db.NewSession(db)
 	if err != nil {
 		log.Fatalf("cannot get rabbit session")
 	}

@@ -2,8 +2,10 @@ package smsc
 
 import (
 	"os"
-	"smpp/rabbit"
+	"smpp/pgdb"
 	"time"
+
+	"github.com/go-pg/pg/v9/orm"
 
 	log "github.com/sirupsen/logrus"
 
@@ -74,12 +76,12 @@ func handlePDU(db *pg.DB) func(pdu.PDU, bool) {
 	return func(p pdu.PDU, responded bool) {
 		switch pd := p.(type) {
 		case *pdu.SubmitSMResp:
-			if _, err := db.Model((*rabbit.Message)(nil)).
-				Set("smsc_message_id = ?, state = ?, last_updated_date = ?", pd.MessageID, rabbit.StateDelivered, time.Now()).
+			if _, err := db.Model((*pgdb.Message)(nil)).
+				Set("smsc_message_id = ?, state = ?, last_updated_date = ?", pd.MessageID, pgdb.StateDelivered, time.Now()).
 				Where("id = ?", pd.GetSequenceNumber()).Update(); err != nil {
 				log.Errorf("cannot update message: %v", err)
 			}
-		case *pdu.GenerickNack:
+		case *pdu.GenericNack:
 			log.Infof("SubmitSMResp:%+v sequence number \n", pd.GetSequenceNumber())
 			log.Info("GenericNack Received")
 		case *pdu.EnquireLinkResp:
@@ -102,17 +104,17 @@ func handlePDU(db *pg.DB) func(pdu.PDU, bool) {
 }
 
 // SubmitSM submit new short message
-func (s *Session) SubmitSM(c <-chan rabbit.Message) {
+func (s *Session) SubmitSM(db orm.DB, c <-chan pgdb.Message) {
 	for m := range c {
 		srcAddr := pdu.NewAddress()
 		srcAddr.SetTon(5)
 		srcAddr.SetNpi(0)
-		_ = srcAddr.SetAddress(m.Src)
+		_ = srcAddr.SetAddress(m.Sender)
 
 		destAddr := pdu.NewAddress()
 		destAddr.SetTon(1)
 		destAddr.SetNpi(1)
-		_ = destAddr.SetAddress(m.Dst)
+		_ = destAddr.SetAddress(m.Receiver)
 
 		submitSM := pdu.NewSubmitSM().(*pdu.SubmitSM)
 		submitSM.SourceAddr = srcAddr

@@ -45,6 +45,9 @@ func NewSession(db *pg.DB) (*Session, error) {
 		false,      // no-wait
 		nil,        // arguments
 	)
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot create queue")
+	}
 
 	s := &Session{
 		connection: conn,
@@ -86,7 +89,7 @@ func (s *Session) Consume(c chan<- Message) {
 
 		if _, err := s.db.Model(&message).Insert(); err != nil {
 			log.Errorf("cannot insert message: %v", err)
-			d.Nack(false, true)
+			_ = d.Nack(false, true)
 		}
 
 		if err := d.Ack(false); err != nil {

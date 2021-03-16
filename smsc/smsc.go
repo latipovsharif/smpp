@@ -22,10 +22,14 @@ type Session struct {
 
 // NewSession returns new session object
 func NewSession(db *pg.DB) *Session {
+	host := os.Getenv("SMSC_HOST")
+	sysId := os.Getenv("SMSC_LOGIN")
+	pass := os.Getenv("SMSC_PASSWORD")
+
 	auth := gosmpp.Auth{
-		SMSC:       os.Getenv("SMSC_HOST"),     // "127.0.0.1:2775",
-		SystemID:   os.Getenv("SMSC_LOGIN"),    // "522241",
-		Password:   os.Getenv("SMSC_PASSWORD"), // "UUDHWB",
+		SMSC:       host,  // "127.0.0.1:2775",
+		SystemID:   sysId, // "522241",
+		Password:   pass,  // "UUDHWB",
 		SystemType: "",
 	}
 
@@ -51,7 +55,7 @@ func NewSession(db *pg.DB) *Session {
 		},
 	}, 5*time.Second)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 
 	return &Session{
@@ -102,39 +106,37 @@ func handlePDU(db *pg.DB) func(pdu.PDU, bool) {
 }
 
 // SubmitSM submit new short message
-func (s *Session) SubmitSM(c <-chan rabbit.Message) {
-	for m := range c {
-		srcAddr := pdu.NewAddress()
-		srcAddr.SetTon(5)
-		srcAddr.SetNpi(0)
-		_ = srcAddr.SetAddress(m.Src)
+func (s *Session) SubmitSM(m rabbit.Message) {
+	srcAddr := pdu.NewAddress()
+	srcAddr.SetTon(5)
+	srcAddr.SetNpi(0)
+	_ = srcAddr.SetAddress(m.Src)
 
-		destAddr := pdu.NewAddress()
-		destAddr.SetTon(1)
-		destAddr.SetNpi(1)
-		_ = destAddr.SetAddress(m.Dst)
+	destAddr := pdu.NewAddress()
+	destAddr.SetTon(1)
+	destAddr.SetNpi(1)
+	_ = destAddr.SetAddress(m.Dst)
 
-		submitSM := pdu.NewSubmitSM().(*pdu.SubmitSM)
-		submitSM.SourceAddr = srcAddr
-		submitSM.DestAddr = destAddr
-		_ = submitSM.Message.SetMessageWithEncoding(m.Message, data.UCS2)
-		submitSM.ProtocolID = 0
-		submitSM.RegisteredDelivery = 1
-		submitSM.ReplaceIfPresentFlag = 0
-		submitSM.EsmClass = 0
-		submitSM.SetSequenceNumber(m.ID)
-		s.c <- submitSM
-	}
+	submitSM := pdu.NewSubmitSM().(*pdu.SubmitSM)
+	submitSM.SourceAddr = srcAddr
+	submitSM.DestAddr = destAddr
+	_ = submitSM.Message.SetMessageWithEncoding(m.Message, data.UCS2)
+	submitSM.ProtocolID = 0
+	submitSM.RegisteredDelivery = 1
+	submitSM.ReplaceIfPresentFlag = 0
+	submitSM.EsmClass = 0
+	submitSM.SetSequenceNumber(m.ID)
+	s.c <- submitSM
 }
 
 // QuerySM make query to smsc about state of sms by message id
-func (s *Session) QuerySM() {
+func (s *Session) QuerySM(m rabbit.Message) {
 	q := pdu.NewQuerySM()
-	q.(*pdu.QuerySM).MessageID = "0cacd4da82d8c2df76ebfd60a8a5ffa498d4f7b1259e17133ff5ed2db89befdc"
+	q.(*pdu.QuerySM).MessageID = m.ExternalID
 	a := pdu.NewAddress()
 	a.SetTon(5)
 	a.SetNpi(0)
-	a.SetAddress("oasis")
+	_ = a.SetAddress(m.Src)
 
 	q.(*pdu.QuerySM).SourceAddr = a
 	if err := s.trans.Transceiver().Submit(q); err != nil {
@@ -144,5 +146,5 @@ func (s *Session) QuerySM() {
 
 // Close session
 func (s *Session) Close() {
-	s.trans.Close()
+	_ = s.trans.Close()
 }

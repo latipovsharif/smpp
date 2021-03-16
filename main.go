@@ -1,12 +1,14 @@
 package main
 
 import (
-	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"smpp/rabbit"
+	"smpp/server"
 	"smpp/smsc"
+	"syscall"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/go-pg/pg/v9"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -19,6 +21,8 @@ const logFilePath = "logs/smpp.log"
 const appVersion = "0.0.1"
 
 func main() {
+
+	log.Infof("starting application: %v", appVersion)
 
 	lumberjackLogRotate := &lumberjack.Logger{
 		Filename:   logFilePath,
@@ -36,24 +40,18 @@ func main() {
 		Password: "123",
 	})
 
-	sigs := make(chan os.Signal)
-	signal.Notify(sigs, os.Interrupt, os.Kill)
-	messages := make(chan rabbit.Message)
-
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
+	messages = make(chan rabbit.Message)
 	s := smsc.NewSession(db)
 
-	rs, err := rabbit.NewSession(db)
-	if err != nil {
-		log.Fatalf("cannot get rabbit session")
-	}
-
 	go s.SendAndReceiveSMS()
-	go rs.Consume(messages)
-	go s.SubmitSM(messages)
 
-	fmt.Println("awaiting signal")
+	srv := server.Server{}
+	go srv.Run(log.StandardLogger(), db, s)
+
+	log.Error("enter ctrl+c to exit")
 
 	<-sigs
 	s.Close()
-	rs.Close()
 }

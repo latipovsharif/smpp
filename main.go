@@ -3,28 +3,20 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
-	"os/signal"
 	"smpp/ent"
 	"smpp/rabbit"
 	"smpp/smsc"
 
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
 
-	"github.com/go-pg/pg"
-	_ "github.com/go-pg/pg"
-
-	//_ "github.com/jackc/pgx/v4/stdlib"
 	_ "github.com/lib/pq"
 )
 
-var db *pg.DB
-var client *ent.Client
-var messages chan *ent.Messages
-
 const logFilePath = "logs/smpp.log"
-const appVersion = "0.0.1"
+
+//const appVersion = "0.0.1"
 
 func main() {
 
@@ -47,7 +39,7 @@ func main() {
 	}
 
 	sigs := make(chan os.Signal)
-	signal.Notify(sigs, os.Interrupt, os.Kill)
+	//signal.Notify(sigs, os.Interrupt, os.Kill)
 	messages := make(chan ent.Messages)
 
 	s := smsc.NewSession(client)

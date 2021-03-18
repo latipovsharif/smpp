@@ -43,7 +43,7 @@ func NewSession(db *ent.Client) (*Session, error) {
 		return nil, errors.Wrap(err, "cannot create new channel")
 	}
 
-	q, err := ch.QueueDeclare(
+	q, _ := ch.QueueDeclare(
 		SMSChannel, // name
 		true,       // durable
 		false,      // delete when unused
@@ -94,17 +94,7 @@ func (s *Session) Consume(c chan<- ent.Messages) {
 			message.State = int(StateNew)
 		}
 
-		if _, err = s.db.Messages.Create().
-			SetSequenceNumber(message.SequenceNumber).
-			SetExternalID(message.ExternalID).
-			SetDst(message.Dst).
-			SetMessage(message.Message).
-			SetSrc(message.Src).
-			SetState(message.State).
-			SetSmscMessageID(message.SmscMessageID).
-			SetProviderIDID(message.UserId).
-			SetUserIDID(message.ProviderId).
-			Save(ctx); err != nil {
+		if _, err = s.db.Messages.Create().Save(ctx); err != nil {
 			log.Errorf("cannot insert message: %v", err)
 			d.Nack(false, true)
 		}

@@ -94,14 +94,27 @@ func (s *Session) Consume(c chan<- ent.Messages) {
 			message.State = int(StateNew)
 		}
 
-		if _, err = s.db.Messages.Create().Save(ctx); err != nil {
+		if _, err = s.db.Messages.Create().
+			SetSequenceNumber(message.SequenceNumber).
+			SetExternalID(message.ExternalID).
+			SetDst(message.Dst).
+			SetMessage(message.Message).
+			SetSrc(message.Src).
+			SetState(message.State).
+			SetSmscMessageID(message.SmscMessageID).
+			SetProviderIDID(message.ProviderId).
+			SetUserIDID(message.UserId).
+			Save(ctx); err != nil {
 			log.Errorf("cannot insert message: %v", err)
 			d.Nack(false, true)
 		}
-		s.createUserMessage(ctx, message.UserId, message.ProviderId)
+
 		if err = d.Ack(false); err != nil {
 			log.Error("cannot ack message")
 		}
+
+		s.createUserMessage(ctx, message.UserId, message.ProviderId)
+
 		if message.State == 0 {
 			continue
 		}
@@ -119,10 +132,13 @@ func (s *Session) Close() {
 }
 
 func (s *Session) chekBalans(ctx context.Context, userID uuid.UUID) bool {
-	usr, _ := s.db.User.Query().
+	usr, err := s.db.User.Query().
 		Where(user.IDEQ(userID)).
 		First(ctx)
-
+	if err != nil {
+		log.Errorf("cannot select User %v", err)
+		return false
+	}
 	messagePrice, _ := s.db.User.Query().Where(user.IDEQ(userID)).QueryRateID().QueryIDPrice().First(ctx)
 	if usr.Balance > messagePrice.Price {
 		if _, err := s.db.User.Update().Where(user.ID(usr.ID)).

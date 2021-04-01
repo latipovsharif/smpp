@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/facebook/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 )
 
@@ -31,7 +31,7 @@ type Rate struct {
 // RateEdges holds the relations/edges for other nodes in the graph.
 type RateEdges struct {
 	// RateID holds the value of the rate_id edge.
-	RateID []*RatePrice
+	RateID []*RatePrice `json:"rate_id,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool

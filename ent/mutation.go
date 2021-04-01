@@ -16,7 +16,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/facebook/ent"
+	"entgo.io/ent"
 	"github.com/google/uuid"
 )
 
@@ -970,8 +970,8 @@ type PriceMutation struct {
 	addmin          *int32
 	max             *int32
 	addmax          *int32
-	price           *int16
-	addprice        *int16
+	price           *float64
+	addprice        *float64
 	create_at       *time.Time
 	update_at       *time.Time
 	clearedFields   map[string]struct{}
@@ -1181,13 +1181,13 @@ func (m *PriceMutation) ResetMax() {
 }
 
 // SetPrice sets the "price" field.
-func (m *PriceMutation) SetPrice(i int16) {
-	m.price = &i
+func (m *PriceMutation) SetPrice(f float64) {
+	m.price = &f
 	m.addprice = nil
 }
 
 // Price returns the value of the "price" field in the mutation.
-func (m *PriceMutation) Price() (r int16, exists bool) {
+func (m *PriceMutation) Price() (r float64, exists bool) {
 	v := m.price
 	if v == nil {
 		return
@@ -1198,7 +1198,7 @@ func (m *PriceMutation) Price() (r int16, exists bool) {
 // OldPrice returns the old "price" field's value of the Price entity.
 // If the Price object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PriceMutation) OldPrice(ctx context.Context) (v int16, err error) {
+func (m *PriceMutation) OldPrice(ctx context.Context) (v float64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldPrice is only allowed on UpdateOne operations")
 	}
@@ -1212,17 +1212,17 @@ func (m *PriceMutation) OldPrice(ctx context.Context) (v int16, err error) {
 	return oldValue.Price, nil
 }
 
-// AddPrice adds i to the "price" field.
-func (m *PriceMutation) AddPrice(i int16) {
+// AddPrice adds f to the "price" field.
+func (m *PriceMutation) AddPrice(f float64) {
 	if m.addprice != nil {
-		*m.addprice += i
+		*m.addprice += f
 	} else {
-		m.addprice = &i
+		m.addprice = &f
 	}
 }
 
 // AddedPrice returns the value that was added to the "price" field in this mutation.
-func (m *PriceMutation) AddedPrice() (r int16, exists bool) {
+func (m *PriceMutation) AddedPrice() (r float64, exists bool) {
 	v := m.addprice
 	if v == nil {
 		return
@@ -1452,7 +1452,7 @@ func (m *PriceMutation) SetField(name string, value ent.Value) error {
 		m.SetMax(v)
 		return nil
 	case price.FieldPrice:
-		v, ok := value.(int16)
+		v, ok := value.(float64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -1527,7 +1527,7 @@ func (m *PriceMutation) AddField(name string, value ent.Value) error {
 		m.AddMax(v)
 		return nil
 	case price.FieldPrice:
-		v, ok := value.(int16)
+		v, ok := value.(float64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -3348,8 +3348,10 @@ type UserMutation struct {
 	op                   Op
 	typ                  string
 	id                   *uuid.UUID
-	balance              *int16
-	addbalance           *int16
+	balance              *float64
+	addbalance           *float64
+	count                *int32
+	addcount             *int32
 	create_at            *time.Time
 	update_at            *time.Time
 	clearedFields        map[string]struct{}
@@ -3452,13 +3454,13 @@ func (m *UserMutation) ID() (id uuid.UUID, exists bool) {
 }
 
 // SetBalance sets the "balance" field.
-func (m *UserMutation) SetBalance(i int16) {
-	m.balance = &i
+func (m *UserMutation) SetBalance(f float64) {
+	m.balance = &f
 	m.addbalance = nil
 }
 
 // Balance returns the value of the "balance" field in the mutation.
-func (m *UserMutation) Balance() (r int16, exists bool) {
+func (m *UserMutation) Balance() (r float64, exists bool) {
 	v := m.balance
 	if v == nil {
 		return
@@ -3469,7 +3471,7 @@ func (m *UserMutation) Balance() (r int16, exists bool) {
 // OldBalance returns the old "balance" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldBalance(ctx context.Context) (v int16, err error) {
+func (m *UserMutation) OldBalance(ctx context.Context) (v float64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldBalance is only allowed on UpdateOne operations")
 	}
@@ -3483,17 +3485,17 @@ func (m *UserMutation) OldBalance(ctx context.Context) (v int16, err error) {
 	return oldValue.Balance, nil
 }
 
-// AddBalance adds i to the "balance" field.
-func (m *UserMutation) AddBalance(i int16) {
+// AddBalance adds f to the "balance" field.
+func (m *UserMutation) AddBalance(f float64) {
 	if m.addbalance != nil {
-		*m.addbalance += i
+		*m.addbalance += f
 	} else {
-		m.addbalance = &i
+		m.addbalance = &f
 	}
 }
 
 // AddedBalance returns the value that was added to the "balance" field in this mutation.
-func (m *UserMutation) AddedBalance() (r int16, exists bool) {
+func (m *UserMutation) AddedBalance() (r float64, exists bool) {
 	v := m.addbalance
 	if v == nil {
 		return
@@ -3505,6 +3507,62 @@ func (m *UserMutation) AddedBalance() (r int16, exists bool) {
 func (m *UserMutation) ResetBalance() {
 	m.balance = nil
 	m.addbalance = nil
+}
+
+// SetCount sets the "count" field.
+func (m *UserMutation) SetCount(i int32) {
+	m.count = &i
+	m.addcount = nil
+}
+
+// Count returns the value of the "count" field in the mutation.
+func (m *UserMutation) Count() (r int32, exists bool) {
+	v := m.count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCount returns the old "count" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldCount(ctx context.Context) (v int32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCount: %w", err)
+	}
+	return oldValue.Count, nil
+}
+
+// AddCount adds i to the "count" field.
+func (m *UserMutation) AddCount(i int32) {
+	if m.addcount != nil {
+		*m.addcount += i
+	} else {
+		m.addcount = &i
+	}
+}
+
+// AddedCount returns the value that was added to the "count" field in this mutation.
+func (m *UserMutation) AddedCount() (r int32, exists bool) {
+	v := m.addcount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCount resets all changes to the "count" field.
+func (m *UserMutation) ResetCount() {
+	m.count = nil
+	m.addcount = nil
 }
 
 // SetCreateAt sets the "create_at" field.
@@ -3738,9 +3796,12 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
 	if m.balance != nil {
 		fields = append(fields, user.FieldBalance)
+	}
+	if m.count != nil {
+		fields = append(fields, user.FieldCount)
 	}
 	if m.create_at != nil {
 		fields = append(fields, user.FieldCreateAt)
@@ -3758,6 +3819,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case user.FieldBalance:
 		return m.Balance()
+	case user.FieldCount:
+		return m.Count()
 	case user.FieldCreateAt:
 		return m.CreateAt()
 	case user.FieldUpdateAt:
@@ -3773,6 +3836,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 	switch name {
 	case user.FieldBalance:
 		return m.OldBalance(ctx)
+	case user.FieldCount:
+		return m.OldCount(ctx)
 	case user.FieldCreateAt:
 		return m.OldCreateAt(ctx)
 	case user.FieldUpdateAt:
@@ -3787,11 +3852,18 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 func (m *UserMutation) SetField(name string, value ent.Value) error {
 	switch name {
 	case user.FieldBalance:
-		v, ok := value.(int16)
+		v, ok := value.(float64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetBalance(v)
+		return nil
+	case user.FieldCount:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCount(v)
 		return nil
 	case user.FieldCreateAt:
 		v, ok := value.(time.Time)
@@ -3818,6 +3890,9 @@ func (m *UserMutation) AddedFields() []string {
 	if m.addbalance != nil {
 		fields = append(fields, user.FieldBalance)
 	}
+	if m.addcount != nil {
+		fields = append(fields, user.FieldCount)
+	}
 	return fields
 }
 
@@ -3828,6 +3903,8 @@ func (m *UserMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	case user.FieldBalance:
 		return m.AddedBalance()
+	case user.FieldCount:
+		return m.AddedCount()
 	}
 	return nil, false
 }
@@ -3838,11 +3915,18 @@ func (m *UserMutation) AddedField(name string) (ent.Value, bool) {
 func (m *UserMutation) AddField(name string, value ent.Value) error {
 	switch name {
 	case user.FieldBalance:
-		v, ok := value.(int16)
+		v, ok := value.(float64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddBalance(v)
+		return nil
+	case user.FieldCount:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCount(v)
 		return nil
 	}
 	return fmt.Errorf("unknown User numeric field %s", name)
@@ -3873,6 +3957,9 @@ func (m *UserMutation) ResetField(name string) error {
 	switch name {
 	case user.FieldBalance:
 		m.ResetBalance()
+		return nil
+	case user.FieldCount:
+		m.ResetCount()
 		return nil
 	case user.FieldCreateAt:
 		m.ResetCreateAt()

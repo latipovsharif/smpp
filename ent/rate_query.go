@@ -12,9 +12,9 @@ import (
 	"smpp/ent/rate"
 	"smpp/ent/rateprice"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 )
 
@@ -64,7 +64,7 @@ func (rq *RateQuery) QueryRateID() *RatePriceQuery {
 		if err := rq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := rq.sqlQuery()
+		selector := rq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -300,7 +300,7 @@ func (rq *RateQuery) GroupBy(field string, fields ...string) *RateGroupBy {
 		if err := rq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		return rq.sqlQuery(), nil
+		return rq.sqlQuery(ctx), nil
 	}
 	return group
 }
@@ -407,7 +407,7 @@ func (rq *RateQuery) sqlCount(ctx context.Context) (int, error) {
 func (rq *RateQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := rq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -457,7 +457,7 @@ func (rq *RateQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (rq *RateQuery) sqlQuery() *sql.Selector {
+func (rq *RateQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(rq.driver.Dialect())
 	t1 := builder.Table(rate.Table)
 	selector := builder.Select(t1.Columns(rate.Columns...)...).From(t1)
@@ -752,7 +752,7 @@ func (rs *RateSelect) Scan(ctx context.Context, v interface{}) error {
 	if err := rs.prepareQuery(ctx); err != nil {
 		return err
 	}
-	rs.sql = rs.RateQuery.sqlQuery()
+	rs.sql = rs.RateQuery.sqlQuery(ctx)
 	return rs.sqlScan(ctx, v)
 }
 

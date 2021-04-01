@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/facebook/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 )
 
@@ -37,22 +37,22 @@ type Messages struct {
 	CreateAt time.Time `json:"create_at,omitempty"`
 	// UpdateAt holds the value of the "update_at" field.
 	UpdateAt time.Time `json:"update_at,omitempty"`
-
-	UserId     uuid.UUID `json:"user_id"`
-	ProviderId uuid.UUID `json:"provider_id"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MessagesQuery when eager-loading is set.
+	ProviderId uuid.UUID `json:"provider_id"`
+	UserId     uuid.UUID `json:"user_id"`
+
 	Edges       MessagesEdges `json:"edges"`
-	provider_id *uuid.UUID    `json:""`
+	provider_id *uuid.UUID
 	user_id     *uuid.UUID
 }
 
 // MessagesEdges holds the relations/edges for other nodes in the graph.
 type MessagesEdges struct {
 	// UserID holds the value of the user_id edge.
-	UserID *User
+	UserID *User `json:"user_id,omitempty"`
 	// ProviderID holds the value of the provider_id edge.
-	ProviderID *Provide
+	ProviderID *Provide `json:"provider_id,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool

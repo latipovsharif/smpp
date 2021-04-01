@@ -10,8 +10,8 @@ import (
 	"smpp/ent/rateprice"
 	"time"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 )
 
@@ -35,8 +35,8 @@ func (pc *PriceCreate) SetMax(i int32) *PriceCreate {
 }
 
 // SetPrice sets the "price" field.
-func (pc *PriceCreate) SetPrice(i int16) *PriceCreate {
-	pc.mutation.SetPrice(i)
+func (pc *PriceCreate) SetPrice(f float64) *PriceCreate {
+	pc.mutation.SetPrice(f)
 	return pc
 }
 
@@ -219,7 +219,7 @@ func (pc *PriceCreate) createSpec() (*Price, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := pc.mutation.Price(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt16,
+			Type:   field.TypeFloat64,
 			Value:  value,
 			Column: price.FieldPrice,
 		})

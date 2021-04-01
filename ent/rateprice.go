@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/facebook/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 )
 
@@ -33,11 +33,11 @@ type RatePrice struct {
 // RatePriceEdges holds the relations/edges for other nodes in the graph.
 type RatePriceEdges struct {
 	// IDRate holds the value of the id_rate edge.
-	IDRate *Rate
+	IDRate *Rate `json:"id_rate,omitempty"`
 	// IDPrice holds the value of the id_price edge.
-	IDPrice *Price
+	IDPrice *Price `json:"id_price,omitempty"`
 	// User holds the value of the user edge.
-	User []*User
+	User []*User `json:"user,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool

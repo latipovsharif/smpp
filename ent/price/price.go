@@ -23,10 +23,8 @@ const (
 	FieldCreateAt = "create_at"
 	// FieldUpdateAt holds the string denoting the update_at field in the database.
 	FieldUpdateAt = "update_at"
-
 	// EdgePriceID holds the string denoting the price_id edge name in mutations.
 	EdgePriceID = "price_id"
-
 	// Table holds the table name of the price in the database.
 	Table = "prices"
 	// PriceIDTable is the table the holds the price_id relation/edge.

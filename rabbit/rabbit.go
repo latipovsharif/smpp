@@ -1,12 +1,10 @@
 package rabbit
 
 import (
-	"context"
 	"encoding/json"
 	"os"
 	"smpp/ent"
-	"smpp/ent/user"
-	"time"
+	"sync"
 
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
@@ -31,16 +29,16 @@ type Session struct {
 }
 
 // NewSession return new rabbitmq session
-func NewSession(db *ent.Client) (*Session, error) {
+func NewSession(db *ent.Client) (*Session, *CacheMap, error) {
 	urlAmqp := os.Getenv("RABBITMQ_HOST")
 	conn, err := amqp.Dial(urlAmqp)
 	if err != nil {
-		return nil, errors.Wrap(err, "cannot connect to rabbitmq")
+		return nil, nil, errors.Wrap(err, "cannot connect to rabbitmq")
 	}
 
 	ch, err := conn.Channel()
 	if err != nil {
-		return nil, errors.Wrap(err, "cannot create new channel")
+		return nil, nil, errors.Wrap(err, "cannot create new channel")
 	}
 
 	q, _ := ch.QueueDeclare(
@@ -60,11 +58,16 @@ func NewSession(db *ent.Client) (*Session, error) {
 		db:         db,
 	}
 
-	return s, nil
+	cacheMap := &CacheMap{
+		Hmap:  map[uuid.UUID][]ent.Messages{},
+		Mutex: &sync.RWMutex{},
+	}
+
+	return s, cacheMap, nil
 }
 
 // Consume start consuming from SMSChannel
-func (s *Session) Consume(c chan<- ent.Messages) {
+func (s *Session) Consume(c chan<- ent.Messages, cacheMap *CacheMap) {
 	msgs, err := s.channel.Consume(
 		s.queue.Name, // queue
 		SMSConsumer,  // consumer
@@ -78,9 +81,7 @@ func (s *Session) Consume(c chan<- ent.Messages) {
 	if err != nil {
 		log.Fatalf("cannot consume from channel %v", err)
 	}
-
 	for d := range msgs {
-		ctx := context.Background()
 		message := ent.Messages{}
 		if err = json.Unmarshal(d.Body, &message); err != nil {
 			log.Errorf("cannot unmarshal message: %v", err)
@@ -89,36 +90,14 @@ func (s *Session) Consume(c chan<- ent.Messages) {
 			}
 			continue
 		}
-
-		if s.chekBalans(ctx, message.UserId) {
-			message.State = int(StateNew)
-		}
-
-		if _, err = s.db.Messages.Create().
-			SetSequenceNumber(message.SequenceNumber).
-			SetExternalID(message.ExternalID).
-			SetDst(message.Dst).
-			SetMessage(message.Message).
-			SetSrc(message.Src).
-			SetState(message.State).
-			SetSmscMessageID(message.SmscMessageID).
-			SetProviderIDID(message.ProviderId).
-			SetUserIDID(message.UserId).
-			Save(ctx); err != nil {
-			log.Errorf("cannot insert message: %v", err)
-			d.Nack(false, true)
-		}
-
 		if err = d.Ack(false); err != nil {
 			log.Error("cannot ack message")
 		}
-
-		s.createUserMessage(ctx, message.UserId, message.ProviderId)
-
-		if message.State == 0 {
-			continue
-		}
-		c <- message
+		cacheMap.Mutex.RLock()
+		arrMes := cacheMap.Hmap[message.UserId]
+		arrMes = append(arrMes, message)
+		cacheMap.Hmap[message.UserId] = arrMes
+		cacheMap.Mutex.RUnlock()
 	}
 
 	<-s.done
@@ -131,33 +110,10 @@ func (s *Session) Close() {
 	s.done <- true
 }
 
-func (s *Session) chekBalans(ctx context.Context, userID uuid.UUID) bool {
-	usr, err := s.db.User.Query().
-		Where(user.IDEQ(userID)).
-		First(ctx)
-	if err != nil {
-		log.Errorf("cannot select User %v", err)
-		return false
-	}
-	messagePrice, _ := s.db.User.Query().Where(user.IDEQ(userID)).QueryRateID().QueryIDPrice().First(ctx)
-	if usr.Balance > messagePrice.Price {
-		if _, err := s.db.User.Update().Where(user.ID(usr.ID)).
-			SetBalance(usr.Balance - messagePrice.Price).
-			SetUpdateAt(time.Now()).
-			Save(ctx); err != nil {
-			log.Errorf("cannot Update user balans: %v", err)
-			return false
-		}
-
-		return true
-	}
-	return false
-}
-
-func (s *Session) createUserMessage(ctx context.Context, userID uuid.UUID, providerID uuid.UUID) {
-	if _, err := s.db.UserMonthMessage.Create().
-		SetUserIDID(userID).
-		SetProviderIDID(providerID).Save(ctx); err != nil {
-		log.Errorf("cannot insert User Month Message: %v", err)
-	}
-}
+// func (s *Session) createUserMessage(ctx context.Context, userID uuid.UUID, providerID uuid.UUID) {
+// 	if _, err := s.db.UserMonthMessage.Create().
+// 		SetUserIDID(userID).
+// 		SetProviderIDID(providerID).Save(ctx); err != nil {
+// 		log.Errorf("cannot insert User Month Message: %v", err)
+// 	}
+// }

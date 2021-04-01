@@ -14,9 +14,9 @@ import (
 	"smpp/ent/rateprice"
 	"smpp/ent/user"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 )
 
@@ -69,7 +69,7 @@ func (rpq *RatePriceQuery) QueryIDRate() *RateQuery {
 		if err := rpq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := rpq.sqlQuery()
+		selector := rpq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -91,7 +91,7 @@ func (rpq *RatePriceQuery) QueryIDPrice() *PriceQuery {
 		if err := rpq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := rpq.sqlQuery()
+		selector := rpq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -113,7 +113,7 @@ func (rpq *RatePriceQuery) QueryUser() *UserQuery {
 		if err := rpq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := rpq.sqlQuery()
+		selector := rpq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -373,7 +373,7 @@ func (rpq *RatePriceQuery) GroupBy(field string, fields ...string) *RatePriceGro
 		if err := rpq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		return rpq.sqlQuery(), nil
+		return rpq.sqlQuery(ctx), nil
 	}
 	return group
 }
@@ -453,7 +453,8 @@ func (rpq *RatePriceQuery) sqlAll(ctx context.Context) ([]*RatePrice, error) {
 		ids := make([]uuid.UUID, 0, len(nodes))
 		nodeids := make(map[uuid.UUID][]*RatePrice)
 		for i := range nodes {
-			if fk := nodes[i].rate_id; fk != nil {
+			fk := nodes[i].rate_id
+			if fk != nil {
 				ids = append(ids, *fk)
 				nodeids[*fk] = append(nodeids[*fk], nodes[i])
 			}
@@ -478,7 +479,8 @@ func (rpq *RatePriceQuery) sqlAll(ctx context.Context) ([]*RatePrice, error) {
 		ids := make([]uuid.UUID, 0, len(nodes))
 		nodeids := make(map[uuid.UUID][]*RatePrice)
 		for i := range nodes {
-			if fk := nodes[i].price_id; fk != nil {
+			fk := nodes[i].price_id
+			if fk != nil {
 				ids = append(ids, *fk)
 				nodeids[*fk] = append(nodeids[*fk], nodes[i])
 			}
@@ -539,7 +541,7 @@ func (rpq *RatePriceQuery) sqlCount(ctx context.Context) (int, error) {
 func (rpq *RatePriceQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := rpq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -589,7 +591,7 @@ func (rpq *RatePriceQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (rpq *RatePriceQuery) sqlQuery() *sql.Selector {
+func (rpq *RatePriceQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(rpq.driver.Dialect())
 	t1 := builder.Table(rateprice.Table)
 	selector := builder.Select(t1.Columns(rateprice.Columns...)...).From(t1)
@@ -884,7 +886,7 @@ func (rps *RatePriceSelect) Scan(ctx context.Context, v interface{}) error {
 	if err := rps.prepareQuery(ctx); err != nil {
 		return err
 	}
-	rps.sql = rps.RatePriceQuery.sqlQuery()
+	rps.sql = rps.RatePriceQuery.sqlQuery(ctx)
 	return rps.sqlScan(ctx, v)
 }
 

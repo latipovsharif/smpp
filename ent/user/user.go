@@ -15,18 +15,18 @@ const (
 	FieldID = "id"
 	// FieldBalance holds the string denoting the balance field in the database.
 	FieldBalance = "balance"
+	// FieldCount holds the string denoting the count field in the database.
+	FieldCount = "count"
 	// FieldCreateAt holds the string denoting the create_at field in the database.
 	FieldCreateAt = "create_at"
 	// FieldUpdateAt holds the string denoting the update_at field in the database.
 	FieldUpdateAt = "update_at"
-
 	// EdgeUserMessages holds the string denoting the user_messages edge name in mutations.
 	EdgeUserMessages = "user_messages"
 	// EdgeMessages holds the string denoting the messages edge name in mutations.
 	EdgeMessages = "messages"
 	// EdgeRateID holds the string denoting the rate_id edge name in mutations.
 	EdgeRateID = "rate_id"
-
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// UserMessagesTable is the table the holds the user_messages relation/edge.
@@ -56,11 +56,13 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldBalance,
+	FieldCount,
 	FieldCreateAt,
 	FieldUpdateAt,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the User type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "users"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"rate_id",
 }
@@ -82,11 +84,15 @@ func ValidColumn(column string) bool {
 
 var (
 	// DefaultBalance holds the default value on creation for the "balance" field.
-	DefaultBalance int16
+	DefaultBalance float64
+	// DefaultCount holds the default value on creation for the "count" field.
+	DefaultCount int32
 	// DefaultCreateAt holds the default value on creation for the "create_at" field.
 	DefaultCreateAt func() time.Time
 	// DefaultUpdateAt holds the default value on creation for the "update_at" field.
 	DefaultUpdateAt func() time.Time
+	// UpdateDefaultUpdateAt holds the default value on update for the "update_at" field.
+	UpdateDefaultUpdateAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

@@ -31,12 +31,10 @@ const (
 	FieldCreateAt = "create_at"
 	// FieldUpdateAt holds the string denoting the update_at field in the database.
 	FieldUpdateAt = "update_at"
-
 	// EdgeUserID holds the string denoting the user_id edge name in mutations.
 	EdgeUserID = "user_id"
 	// EdgeProviderID holds the string denoting the provider_id edge name in mutations.
 	EdgeProviderID = "provider_id"
-
 	// Table holds the table name of the messages in the database.
 	Table = "messages"
 	// UserIDTable is the table the holds the user_id relation/edge.
@@ -69,7 +67,8 @@ var Columns = []string{
 	FieldUpdateAt,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the Messages type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "messages"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"provider_id",
 	"user_id",

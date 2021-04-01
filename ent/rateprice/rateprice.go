@@ -17,14 +17,12 @@ const (
 	FieldCreateAt = "create_at"
 	// FieldUpdateAt holds the string denoting the update_at field in the database.
 	FieldUpdateAt = "update_at"
-
 	// EdgeIDRate holds the string denoting the id_rate edge name in mutations.
 	EdgeIDRate = "id_rate"
 	// EdgeIDPrice holds the string denoting the id_price edge name in mutations.
 	EdgeIDPrice = "id_price"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
-
 	// Table holds the table name of the rateprice in the database.
 	Table = "rate_prices"
 	// IDRateTable is the table the holds the id_rate relation/edge.
@@ -57,7 +55,8 @@ var Columns = []string{
 	FieldUpdateAt,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the RatePrice type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "rate_prices"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"price_id",
 	"rate_id",

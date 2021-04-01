@@ -12,9 +12,9 @@ import (
 	"smpp/ent/provide"
 	"smpp/ent/user"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 )
 
@@ -66,7 +66,7 @@ func (mq *MessagesQuery) QueryUserID() *UserQuery {
 		if err := mq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := mq.sqlQuery()
+		selector := mq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -88,7 +88,7 @@ func (mq *MessagesQuery) QueryProviderID() *ProvideQuery {
 		if err := mq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := mq.sqlQuery()
+		selector := mq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -336,7 +336,7 @@ func (mq *MessagesQuery) GroupBy(field string, fields ...string) *MessagesGroupB
 		if err := mq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		return mq.sqlQuery(), nil
+		return mq.sqlQuery(ctx), nil
 	}
 	return group
 }
@@ -415,7 +415,8 @@ func (mq *MessagesQuery) sqlAll(ctx context.Context) ([]*Messages, error) {
 		ids := make([]uuid.UUID, 0, len(nodes))
 		nodeids := make(map[uuid.UUID][]*Messages)
 		for i := range nodes {
-			if fk := nodes[i].user_id; fk != nil {
+			fk := nodes[i].user_id
+			if fk != nil {
 				ids = append(ids, *fk)
 				nodeids[*fk] = append(nodeids[*fk], nodes[i])
 			}
@@ -440,7 +441,8 @@ func (mq *MessagesQuery) sqlAll(ctx context.Context) ([]*Messages, error) {
 		ids := make([]uuid.UUID, 0, len(nodes))
 		nodeids := make(map[uuid.UUID][]*Messages)
 		for i := range nodes {
-			if fk := nodes[i].provider_id; fk != nil {
+			fk := nodes[i].provider_id
+			if fk != nil {
 				ids = append(ids, *fk)
 				nodeids[*fk] = append(nodeids[*fk], nodes[i])
 			}
@@ -472,7 +474,7 @@ func (mq *MessagesQuery) sqlCount(ctx context.Context) (int, error) {
 func (mq *MessagesQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := mq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -522,7 +524,7 @@ func (mq *MessagesQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (mq *MessagesQuery) sqlQuery() *sql.Selector {
+func (mq *MessagesQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(mq.driver.Dialect())
 	t1 := builder.Table(messages.Table)
 	selector := builder.Select(t1.Columns(messages.Columns...)...).From(t1)
@@ -817,7 +819,7 @@ func (ms *MessagesSelect) Scan(ctx context.Context, v interface{}) error {
 	if err := ms.prepareQuery(ctx); err != nil {
 		return err
 	}
-	ms.sql = ms.MessagesQuery.sqlQuery()
+	ms.sql = ms.MessagesQuery.sqlQuery(ctx)
 	return ms.sqlScan(ctx, v)
 }
 

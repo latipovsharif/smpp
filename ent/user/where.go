@@ -6,8 +6,8 @@ import (
 	"smpp/ent/predicate"
 	"time"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -95,9 +95,16 @@ func IDLTE(id uuid.UUID) predicate.User {
 }
 
 // Balance applies equality check predicate on the "balance" field. It's identical to BalanceEQ.
-func Balance(v int16) predicate.User {
+func Balance(v float64) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldBalance), v))
+	})
+}
+
+// Count applies equality check predicate on the "count" field. It's identical to CountEQ.
+func Count(v int32) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldCount), v))
 	})
 }
 
@@ -116,21 +123,21 @@ func UpdateAt(v time.Time) predicate.User {
 }
 
 // BalanceEQ applies the EQ predicate on the "balance" field.
-func BalanceEQ(v int16) predicate.User {
+func BalanceEQ(v float64) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldBalance), v))
 	})
 }
 
 // BalanceNEQ applies the NEQ predicate on the "balance" field.
-func BalanceNEQ(v int16) predicate.User {
+func BalanceNEQ(v float64) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldBalance), v))
 	})
 }
 
 // BalanceIn applies the In predicate on the "balance" field.
-func BalanceIn(vs ...int16) predicate.User {
+func BalanceIn(vs ...float64) predicate.User {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -147,7 +154,7 @@ func BalanceIn(vs ...int16) predicate.User {
 }
 
 // BalanceNotIn applies the NotIn predicate on the "balance" field.
-func BalanceNotIn(vs ...int16) predicate.User {
+func BalanceNotIn(vs ...float64) predicate.User {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -164,30 +171,106 @@ func BalanceNotIn(vs ...int16) predicate.User {
 }
 
 // BalanceGT applies the GT predicate on the "balance" field.
-func BalanceGT(v int16) predicate.User {
+func BalanceGT(v float64) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldBalance), v))
 	})
 }
 
 // BalanceGTE applies the GTE predicate on the "balance" field.
-func BalanceGTE(v int16) predicate.User {
+func BalanceGTE(v float64) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldBalance), v))
 	})
 }
 
 // BalanceLT applies the LT predicate on the "balance" field.
-func BalanceLT(v int16) predicate.User {
+func BalanceLT(v float64) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldBalance), v))
 	})
 }
 
 // BalanceLTE applies the LTE predicate on the "balance" field.
-func BalanceLTE(v int16) predicate.User {
+func BalanceLTE(v float64) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldBalance), v))
+	})
+}
+
+// CountEQ applies the EQ predicate on the "count" field.
+func CountEQ(v int32) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldCount), v))
+	})
+}
+
+// CountNEQ applies the NEQ predicate on the "count" field.
+func CountNEQ(v int32) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldCount), v))
+	})
+}
+
+// CountIn applies the In predicate on the "count" field.
+func CountIn(vs ...int32) predicate.User {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.User(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldCount), v...))
+	})
+}
+
+// CountNotIn applies the NotIn predicate on the "count" field.
+func CountNotIn(vs ...int32) predicate.User {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.User(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldCount), v...))
+	})
+}
+
+// CountGT applies the GT predicate on the "count" field.
+func CountGT(v int32) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldCount), v))
+	})
+}
+
+// CountGTE applies the GTE predicate on the "count" field.
+func CountGTE(v int32) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldCount), v))
+	})
+}
+
+// CountLT applies the LT predicate on the "count" field.
+func CountLT(v int32) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldCount), v))
+	})
+}
+
+// CountLTE applies the LTE predicate on the "count" field.
+func CountLTE(v int32) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldCount), v))
 	})
 }
 

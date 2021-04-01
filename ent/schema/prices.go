@@ -3,9 +3,9 @@ package schema
 import (
 	"time"
 
-	"github.com/facebook/ent"
-	"github.com/facebook/ent/schema/edge"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
+	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 )
 
@@ -22,7 +22,7 @@ func (Price) Fields() []ent.Field {
 			Unique(),
 		field.Int32("min"),
 		field.Int32("max"),
-		field.Int16("price").Unique(),
+		field.Float("price").Unique(),
 		field.Time("create_at").Default(time.Now),
 		field.Time("update_at").Default(time.Now),
 	}

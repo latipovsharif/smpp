@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/facebook/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 )
 
@@ -33,9 +33,9 @@ type Provide struct {
 // ProvideEdges holds the relations/edges for other nodes in the graph.
 type ProvideEdges struct {
 	// ProviderID holds the value of the provider_id edge.
-	ProviderID []*UserMonthMessage
+	ProviderID []*UserMonthMessage `json:"provider_id,omitempty"`
 	// Messages holds the value of the messages edge.
-	Messages []*Messages
+	Messages []*Messages `json:"messages,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool

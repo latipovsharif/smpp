@@ -81,7 +81,6 @@ func handlePDU(db *ent.Client) func(pdu.PDU, bool) {
 				Where(messages.SequenceNumber(pd.SequenceNumber)).
 				SetState(int(rabbit.StateDelivered)).
 				SetSmscMessageID(pd.MessageID).
-				SetUpdateAt(time.Now()).
 				Save(ctx); err != nil {
 				log.Errorf("cannot update message: %v", err)
 			}
@@ -124,6 +123,7 @@ func (s *Session) SubmitSM(c <-chan ent.Messages) {
 		submitSM.SourceAddr = srcAddr
 		submitSM.DestAddr = destAddr
 		_ = submitSM.Message.SetMessageWithEncoding(m.Message, data.UCS2)
+
 		submitSM.ProtocolID = 0
 		submitSM.RegisteredDelivery = 1
 		submitSM.ReplaceIfPresentFlag = 0

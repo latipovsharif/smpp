@@ -95,15 +95,21 @@ func init() {
 	// userDescBalance is the schema descriptor for balance field.
 	userDescBalance := userFields[1].Descriptor()
 	// user.DefaultBalance holds the default value on creation for the balance field.
-	user.DefaultBalance = userDescBalance.Default.(int16)
+	user.DefaultBalance = userDescBalance.Default.(float64)
+	// userDescCount is the schema descriptor for count field.
+	userDescCount := userFields[2].Descriptor()
+	// user.DefaultCount holds the default value on creation for the count field.
+	user.DefaultCount = userDescCount.Default.(int32)
 	// userDescCreateAt is the schema descriptor for create_at field.
-	userDescCreateAt := userFields[2].Descriptor()
+	userDescCreateAt := userFields[3].Descriptor()
 	// user.DefaultCreateAt holds the default value on creation for the create_at field.
 	user.DefaultCreateAt = userDescCreateAt.Default.(func() time.Time)
 	// userDescUpdateAt is the schema descriptor for update_at field.
-	userDescUpdateAt := userFields[3].Descriptor()
+	userDescUpdateAt := userFields[4].Descriptor()
 	// user.DefaultUpdateAt holds the default value on creation for the update_at field.
 	user.DefaultUpdateAt = userDescUpdateAt.Default.(func() time.Time)
+	// user.UpdateDefaultUpdateAt holds the default value on update for the update_at field.
+	user.UpdateDefaultUpdateAt = userDescUpdateAt.UpdateDefault.(func() time.Time)
 	// userDescID is the schema descriptor for id field.
 	userDescID := userFields[0].Descriptor()
 	// user.DefaultID holds the default value on creation for the id field.

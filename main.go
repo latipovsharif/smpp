@@ -44,14 +44,15 @@ func main() {
 
 	s := smsc.NewSession(client)
 
-	rs, err := rabbit.NewSession(client)
+	rs, cacheMap, err := rabbit.NewSession(client)
 	if err != nil {
 		log.Fatalf("cannot get rabbit session")
 	}
 
 	go s.SendAndReceiveSMS()
-	go rs.Consume(messages)
+	go rs.Consume(messages, cacheMap)
 	go s.SubmitSM(messages)
+	go rs.SendingMessage(messages, cacheMap)
 
 	fmt.Println("awaiting signal")
 

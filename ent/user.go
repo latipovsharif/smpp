@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/facebook/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 )
 
@@ -19,7 +19,9 @@ type User struct {
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
 	// Balance holds the value of the "balance" field.
-	Balance int16 `json:"balance,omitempty"`
+	Balance float64 `json:"balance,omitempty"`
+	// Count holds the value of the "count" field.
+	Count int32 `json:"count,omitempty"`
 	// CreateAt holds the value of the "create_at" field.
 	CreateAt time.Time `json:"create_at,omitempty"`
 	// UpdateAt holds the value of the "update_at" field.
@@ -33,11 +35,11 @@ type User struct {
 // UserEdges holds the relations/edges for other nodes in the graph.
 type UserEdges struct {
 	// UserMessages holds the value of the user_messages edge.
-	UserMessages []*UserMonthMessage
+	UserMessages []*UserMonthMessage `json:"user_messages,omitempty"`
 	// Messages holds the value of the messages edge.
-	Messages []*Messages
+	Messages []*Messages `json:"messages,omitempty"`
 	// RateID holds the value of the rate_id edge.
-	RateID *RatePrice
+	RateID *RatePrice `json:"rate_id,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -81,6 +83,8 @@ func (*User) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case user.FieldBalance:
+			values[i] = &sql.NullFloat64{}
+		case user.FieldCount:
 			values[i] = &sql.NullInt64{}
 		case user.FieldCreateAt, user.FieldUpdateAt:
 			values[i] = &sql.NullTime{}
@@ -110,10 +114,16 @@ func (u *User) assignValues(columns []string, values []interface{}) error {
 				u.ID = *value
 			}
 		case user.FieldBalance:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field balance", values[i])
 			} else if value.Valid {
-				u.Balance = int16(value.Int64)
+				u.Balance = value.Float64
+			}
+		case user.FieldCount:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field count", values[i])
+			} else if value.Valid {
+				u.Count = int32(value.Int64)
 			}
 		case user.FieldCreateAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -178,6 +188,8 @@ func (u *User) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v", u.ID))
 	builder.WriteString(", balance=")
 	builder.WriteString(fmt.Sprintf("%v", u.Balance))
+	builder.WriteString(", count=")
+	builder.WriteString(fmt.Sprintf("%v", u.Count))
 	builder.WriteString(", create_at=")
 	builder.WriteString(u.CreateAt.Format(time.ANSIC))
 	builder.WriteString(", update_at=")

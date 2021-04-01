@@ -11,8 +11,8 @@ import (
 	"smpp/ent/usermonthmessage"
 	"time"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 )
 
@@ -260,6 +260,7 @@ func (ummc *UserMonthMessageCreate) createSpec() (*UserMonthMessage, *sqlgraph.C
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.provider_id = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := ummc.mutation.UserIDIDs(); len(nodes) > 0 {
@@ -279,6 +280,7 @@ func (ummc *UserMonthMessageCreate) createSpec() (*UserMonthMessage, *sqlgraph.C
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.user_id = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

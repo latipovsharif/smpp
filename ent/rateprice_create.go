@@ -12,8 +12,8 @@ import (
 	"smpp/ent/user"
 	"time"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 )
 
@@ -247,6 +247,7 @@ func (rpc *RatePriceCreate) createSpec() (*RatePrice, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.rate_id = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := rpc.mutation.IDPriceIDs(); len(nodes) > 0 {
@@ -266,6 +267,7 @@ func (rpc *RatePriceCreate) createSpec() (*RatePrice, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.price_id = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := rpc.mutation.UserIDs(); len(nodes) > 0 {

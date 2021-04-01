@@ -8,9 +8,9 @@ import (
 	"smpp/ent/predicate"
 	"smpp/ent/rate"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 )
 
 // RateDelete is the builder for deleting a Rate entity.

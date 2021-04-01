@@ -12,8 +12,8 @@ import (
 	"smpp/ent/usermonthmessage"
 	"time"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 )
 
@@ -25,15 +25,29 @@ type UserCreate struct {
 }
 
 // SetBalance sets the "balance" field.
-func (uc *UserCreate) SetBalance(i int16) *UserCreate {
-	uc.mutation.SetBalance(i)
+func (uc *UserCreate) SetBalance(f float64) *UserCreate {
+	uc.mutation.SetBalance(f)
 	return uc
 }
 
 // SetNillableBalance sets the "balance" field if the given value is not nil.
-func (uc *UserCreate) SetNillableBalance(i *int16) *UserCreate {
+func (uc *UserCreate) SetNillableBalance(f *float64) *UserCreate {
+	if f != nil {
+		uc.SetBalance(*f)
+	}
+	return uc
+}
+
+// SetCount sets the "count" field.
+func (uc *UserCreate) SetCount(i int32) *UserCreate {
+	uc.mutation.SetCount(i)
+	return uc
+}
+
+// SetNillableCount sets the "count" field if the given value is not nil.
+func (uc *UserCreate) SetNillableCount(i *int32) *UserCreate {
 	if i != nil {
-		uc.SetBalance(*i)
+		uc.SetCount(*i)
 	}
 	return uc
 }
@@ -177,6 +191,10 @@ func (uc *UserCreate) defaults() {
 		v := user.DefaultBalance
 		uc.mutation.SetBalance(v)
 	}
+	if _, ok := uc.mutation.Count(); !ok {
+		v := user.DefaultCount
+		uc.mutation.SetCount(v)
+	}
 	if _, ok := uc.mutation.CreateAt(); !ok {
 		v := user.DefaultCreateAt()
 		uc.mutation.SetCreateAt(v)
@@ -195,6 +213,9 @@ func (uc *UserCreate) defaults() {
 func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.Balance(); !ok {
 		return &ValidationError{Name: "balance", err: errors.New("ent: missing required field \"balance\"")}
+	}
+	if _, ok := uc.mutation.Count(); !ok {
+		return &ValidationError{Name: "count", err: errors.New("ent: missing required field \"count\"")}
 	}
 	if _, ok := uc.mutation.CreateAt(); !ok {
 		return &ValidationError{Name: "create_at", err: errors.New("ent: missing required field \"create_at\"")}
@@ -233,11 +254,19 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := uc.mutation.Balance(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt16,
+			Type:   field.TypeFloat64,
 			Value:  value,
 			Column: user.FieldBalance,
 		})
 		_node.Balance = value
+	}
+	if value, ok := uc.mutation.Count(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt32,
+			Value:  value,
+			Column: user.FieldCount,
+		})
+		_node.Count = value
 	}
 	if value, ok := uc.mutation.CreateAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -310,6 +339,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.rate_id = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

@@ -21,12 +21,10 @@ const (
 	FieldCreateAt = "create_at"
 	// FieldUpdateAt holds the string denoting the update_at field in the database.
 	FieldUpdateAt = "update_at"
-
 	// EdgeProviderID holds the string denoting the provider_id edge name in mutations.
 	EdgeProviderID = "provider_id"
 	// EdgeMessages holds the string denoting the messages edge name in mutations.
 	EdgeMessages = "messages"
-
 	// Table holds the table name of the provide in the database.
 	Table = "provides"
 	// ProviderIDTable is the table the holds the provider_id relation/edge.

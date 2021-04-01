@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/facebook/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 )
 
@@ -22,7 +22,7 @@ type Price struct {
 	// Max holds the value of the "max" field.
 	Max int32 `json:"max,omitempty"`
 	// Price holds the value of the "price" field.
-	Price int16 `json:"price,omitempty"`
+	Price float64 `json:"price,omitempty"`
 	// CreateAt holds the value of the "create_at" field.
 	CreateAt time.Time `json:"create_at,omitempty"`
 	// UpdateAt holds the value of the "update_at" field.
@@ -35,7 +35,7 @@ type Price struct {
 // PriceEdges holds the relations/edges for other nodes in the graph.
 type PriceEdges struct {
 	// PriceID holds the value of the price_id edge.
-	PriceID []*RatePrice
+	PriceID []*RatePrice `json:"price_id,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
@@ -55,7 +55,9 @@ func (*Price) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case price.FieldMin, price.FieldMax, price.FieldPrice:
+		case price.FieldPrice:
+			values[i] = &sql.NullFloat64{}
+		case price.FieldMin, price.FieldMax:
 			values[i] = &sql.NullInt64{}
 		case price.FieldCreateAt, price.FieldUpdateAt:
 			values[i] = &sql.NullTime{}
@@ -95,10 +97,10 @@ func (pr *Price) assignValues(columns []string, values []interface{}) error {
 				pr.Max = int32(value.Int64)
 			}
 		case price.FieldPrice:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field price", values[i])
 			} else if value.Valid {
-				pr.Price = int16(value.Int64)
+				pr.Price = value.Float64
 			}
 		case price.FieldCreateAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {

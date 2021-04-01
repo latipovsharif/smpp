@@ -12,9 +12,9 @@ import (
 	"smpp/ent/usermonthmessage"
 	"time"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 )
 
@@ -32,23 +32,44 @@ func (uu *UserUpdate) Where(ps ...predicate.User) *UserUpdate {
 }
 
 // SetBalance sets the "balance" field.
-func (uu *UserUpdate) SetBalance(i int16) *UserUpdate {
+func (uu *UserUpdate) SetBalance(f float64) *UserUpdate {
 	uu.mutation.ResetBalance()
-	uu.mutation.SetBalance(i)
+	uu.mutation.SetBalance(f)
 	return uu
 }
 
 // SetNillableBalance sets the "balance" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableBalance(i *int16) *UserUpdate {
-	if i != nil {
-		uu.SetBalance(*i)
+func (uu *UserUpdate) SetNillableBalance(f *float64) *UserUpdate {
+	if f != nil {
+		uu.SetBalance(*f)
 	}
 	return uu
 }
 
-// AddBalance adds i to the "balance" field.
-func (uu *UserUpdate) AddBalance(i int16) *UserUpdate {
-	uu.mutation.AddBalance(i)
+// AddBalance adds f to the "balance" field.
+func (uu *UserUpdate) AddBalance(f float64) *UserUpdate {
+	uu.mutation.AddBalance(f)
+	return uu
+}
+
+// SetCount sets the "count" field.
+func (uu *UserUpdate) SetCount(i int32) *UserUpdate {
+	uu.mutation.ResetCount()
+	uu.mutation.SetCount(i)
+	return uu
+}
+
+// SetNillableCount sets the "count" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableCount(i *int32) *UserUpdate {
+	if i != nil {
+		uu.SetCount(*i)
+	}
+	return uu
+}
+
+// AddCount adds i to the "count" field.
+func (uu *UserUpdate) AddCount(i int32) *UserUpdate {
+	uu.mutation.AddCount(i)
 	return uu
 }
 
@@ -69,14 +90,6 @@ func (uu *UserUpdate) SetNillableCreateAt(t *time.Time) *UserUpdate {
 // SetUpdateAt sets the "update_at" field.
 func (uu *UserUpdate) SetUpdateAt(t time.Time) *UserUpdate {
 	uu.mutation.SetUpdateAt(t)
-	return uu
-}
-
-// SetNillableUpdateAt sets the "update_at" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableUpdateAt(t *time.Time) *UserUpdate {
-	if t != nil {
-		uu.SetUpdateAt(*t)
-	}
 	return uu
 }
 
@@ -188,6 +201,7 @@ func (uu *UserUpdate) Save(ctx context.Context) (int, error) {
 		err      error
 		affected int
 	)
+	uu.defaults()
 	if len(uu.hooks) == 0 {
 		affected, err = uu.sqlSave(ctx)
 	} else {
@@ -233,6 +247,14 @@ func (uu *UserUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (uu *UserUpdate) defaults() {
+	if _, ok := uu.mutation.UpdateAt(); !ok {
+		v := user.UpdateDefaultUpdateAt()
+		uu.mutation.SetUpdateAt(v)
+	}
+}
+
 func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -253,16 +275,30 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := uu.mutation.Balance(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt16,
+			Type:   field.TypeFloat64,
 			Value:  value,
 			Column: user.FieldBalance,
 		})
 	}
 	if value, ok := uu.mutation.AddedBalance(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt16,
+			Type:   field.TypeFloat64,
 			Value:  value,
 			Column: user.FieldBalance,
+		})
+	}
+	if value, ok := uu.mutation.Count(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt32,
+			Value:  value,
+			Column: user.FieldCount,
+		})
+	}
+	if value, ok := uu.mutation.AddedCount(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt32,
+			Value:  value,
+			Column: user.FieldCount,
 		})
 	}
 	if value, ok := uu.mutation.CreateAt(); ok {
@@ -441,23 +477,44 @@ type UserUpdateOne struct {
 }
 
 // SetBalance sets the "balance" field.
-func (uuo *UserUpdateOne) SetBalance(i int16) *UserUpdateOne {
+func (uuo *UserUpdateOne) SetBalance(f float64) *UserUpdateOne {
 	uuo.mutation.ResetBalance()
-	uuo.mutation.SetBalance(i)
+	uuo.mutation.SetBalance(f)
 	return uuo
 }
 
 // SetNillableBalance sets the "balance" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableBalance(i *int16) *UserUpdateOne {
-	if i != nil {
-		uuo.SetBalance(*i)
+func (uuo *UserUpdateOne) SetNillableBalance(f *float64) *UserUpdateOne {
+	if f != nil {
+		uuo.SetBalance(*f)
 	}
 	return uuo
 }
 
-// AddBalance adds i to the "balance" field.
-func (uuo *UserUpdateOne) AddBalance(i int16) *UserUpdateOne {
-	uuo.mutation.AddBalance(i)
+// AddBalance adds f to the "balance" field.
+func (uuo *UserUpdateOne) AddBalance(f float64) *UserUpdateOne {
+	uuo.mutation.AddBalance(f)
+	return uuo
+}
+
+// SetCount sets the "count" field.
+func (uuo *UserUpdateOne) SetCount(i int32) *UserUpdateOne {
+	uuo.mutation.ResetCount()
+	uuo.mutation.SetCount(i)
+	return uuo
+}
+
+// SetNillableCount sets the "count" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableCount(i *int32) *UserUpdateOne {
+	if i != nil {
+		uuo.SetCount(*i)
+	}
+	return uuo
+}
+
+// AddCount adds i to the "count" field.
+func (uuo *UserUpdateOne) AddCount(i int32) *UserUpdateOne {
+	uuo.mutation.AddCount(i)
 	return uuo
 }
 
@@ -478,14 +535,6 @@ func (uuo *UserUpdateOne) SetNillableCreateAt(t *time.Time) *UserUpdateOne {
 // SetUpdateAt sets the "update_at" field.
 func (uuo *UserUpdateOne) SetUpdateAt(t time.Time) *UserUpdateOne {
 	uuo.mutation.SetUpdateAt(t)
-	return uuo
-}
-
-// SetNillableUpdateAt sets the "update_at" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableUpdateAt(t *time.Time) *UserUpdateOne {
-	if t != nil {
-		uuo.SetUpdateAt(*t)
-	}
 	return uuo
 }
 
@@ -597,6 +646,7 @@ func (uuo *UserUpdateOne) Save(ctx context.Context) (*User, error) {
 		err  error
 		node *User
 	)
+	uuo.defaults()
 	if len(uuo.hooks) == 0 {
 		node, err = uuo.sqlSave(ctx)
 	} else {
@@ -642,6 +692,14 @@ func (uuo *UserUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (uuo *UserUpdateOne) defaults() {
+	if _, ok := uuo.mutation.UpdateAt(); !ok {
+		v := user.UpdateDefaultUpdateAt()
+		uuo.mutation.SetUpdateAt(v)
+	}
+}
+
 func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -658,18 +716,39 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing User.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if ps := uuo.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
 	if value, ok := uuo.mutation.Balance(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt16,
+			Type:   field.TypeFloat64,
 			Value:  value,
 			Column: user.FieldBalance,
 		})
 	}
 	if value, ok := uuo.mutation.AddedBalance(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt16,
+			Type:   field.TypeFloat64,
 			Value:  value,
 			Column: user.FieldBalance,
+		})
+	}
+	if value, ok := uuo.mutation.Count(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt32,
+			Value:  value,
+			Column: user.FieldCount,
+		})
+	}
+	if value, ok := uuo.mutation.AddedCount(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt32,
+			Value:  value,
+			Column: user.FieldCount,
 		})
 	}
 	if value, ok := uuo.mutation.CreateAt(); ok {

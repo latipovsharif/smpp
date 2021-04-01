@@ -13,9 +13,9 @@ import (
 	"smpp/ent/provide"
 	"smpp/ent/usermonthmessage"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 )
 
@@ -66,7 +66,7 @@ func (pq *ProvideQuery) QueryProviderID() *UserMonthMessageQuery {
 		if err := pq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := pq.sqlQuery()
+		selector := pq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -88,7 +88,7 @@ func (pq *ProvideQuery) QueryMessages() *MessagesQuery {
 		if err := pq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := pq.sqlQuery()
+		selector := pq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -336,7 +336,7 @@ func (pq *ProvideQuery) GroupBy(field string, fields ...string) *ProvideGroupBy 
 		if err := pq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		return pq.sqlQuery(), nil
+		return pq.sqlQuery(ctx), nil
 	}
 	return group
 }
@@ -473,7 +473,7 @@ func (pq *ProvideQuery) sqlCount(ctx context.Context) (int, error) {
 func (pq *ProvideQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := pq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -523,7 +523,7 @@ func (pq *ProvideQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (pq *ProvideQuery) sqlQuery() *sql.Selector {
+func (pq *ProvideQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(pq.driver.Dialect())
 	t1 := builder.Table(provide.Table)
 	selector := builder.Select(t1.Columns(provide.Columns...)...).From(t1)
@@ -818,7 +818,7 @@ func (ps *ProvideSelect) Scan(ctx context.Context, v interface{}) error {
 	if err := ps.prepareQuery(ctx); err != nil {
 		return err
 	}
-	ps.sql = ps.ProvideQuery.sqlQuery()
+	ps.sql = ps.ProvideQuery.sqlQuery(ctx)
 	return ps.sqlScan(ctx, v)
 }
 

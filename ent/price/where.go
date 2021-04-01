@@ -6,8 +6,8 @@ import (
 	"smpp/ent/predicate"
 	"time"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -109,7 +109,7 @@ func Max(v int32) predicate.Price {
 }
 
 // Price applies equality check predicate on the "price" field. It's identical to PriceEQ.
-func Price(v int16) predicate.Price {
+func Price(v float64) predicate.Price {
 	return predicate.Price(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldPrice), v))
 	})
@@ -282,21 +282,21 @@ func MaxLTE(v int32) predicate.Price {
 }
 
 // PriceEQ applies the EQ predicate on the "price" field.
-func PriceEQ(v int16) predicate.Price {
+func PriceEQ(v float64) predicate.Price {
 	return predicate.Price(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldPrice), v))
 	})
 }
 
 // PriceNEQ applies the NEQ predicate on the "price" field.
-func PriceNEQ(v int16) predicate.Price {
+func PriceNEQ(v float64) predicate.Price {
 	return predicate.Price(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldPrice), v))
 	})
 }
 
 // PriceIn applies the In predicate on the "price" field.
-func PriceIn(vs ...int16) predicate.Price {
+func PriceIn(vs ...float64) predicate.Price {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -313,7 +313,7 @@ func PriceIn(vs ...int16) predicate.Price {
 }
 
 // PriceNotIn applies the NotIn predicate on the "price" field.
-func PriceNotIn(vs ...int16) predicate.Price {
+func PriceNotIn(vs ...float64) predicate.Price {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -330,28 +330,28 @@ func PriceNotIn(vs ...int16) predicate.Price {
 }
 
 // PriceGT applies the GT predicate on the "price" field.
-func PriceGT(v int16) predicate.Price {
+func PriceGT(v float64) predicate.Price {
 	return predicate.Price(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldPrice), v))
 	})
 }
 
 // PriceGTE applies the GTE predicate on the "price" field.
-func PriceGTE(v int16) predicate.Price {
+func PriceGTE(v float64) predicate.Price {
 	return predicate.Price(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldPrice), v))
 	})
 }
 
 // PriceLT applies the LT predicate on the "price" field.
-func PriceLT(v int16) predicate.Price {
+func PriceLT(v float64) predicate.Price {
 	return predicate.Price(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldPrice), v))
 	})
 }
 
 // PriceLTE applies the LTE predicate on the "price" field.
-func PriceLTE(v int16) predicate.Price {
+func PriceLTE(v float64) predicate.Price {
 	return predicate.Price(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldPrice), v))
 	})

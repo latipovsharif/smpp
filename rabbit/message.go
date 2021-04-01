@@ -4,8 +4,8 @@ type state int
 
 // Message states
 const (
-	StateNew state = iota + 1
+	InvalidBalance state = iota
+	StateNew       
 	StateDelivered
 	StateNotDelivered
 )
-

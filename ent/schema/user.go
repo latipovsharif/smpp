@@ -3,9 +3,9 @@ package schema
 import (
 	"time"
 
-	"github.com/facebook/ent"
-	"github.com/facebook/ent/schema/edge"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
+	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 )
 
@@ -20,9 +20,12 @@ func (User) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New).
 			Unique(),
-		field.Int16("balance").Default(0),
+		field.Float("balance").Default(0),
+		field.Int32("count").Default(0),
 		field.Time("create_at").Default(time.Now),
-		field.Time("update_at").Default(time.Now),
+		field.Time("update_at").
+			Default(time.Now).
+			UpdateDefault(time.Now),
 	}
 }
 

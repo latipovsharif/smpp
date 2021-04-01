@@ -12,9 +12,9 @@ import (
 	"smpp/ent/user"
 	"smpp/ent/usermonthmessage"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 )
 
@@ -66,7 +66,7 @@ func (ummq *UserMonthMessageQuery) QueryProviderID() *ProvideQuery {
 		if err := ummq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := ummq.sqlQuery()
+		selector := ummq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -88,7 +88,7 @@ func (ummq *UserMonthMessageQuery) QueryUserID() *UserQuery {
 		if err := ummq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := ummq.sqlQuery()
+		selector := ummq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -336,7 +336,7 @@ func (ummq *UserMonthMessageQuery) GroupBy(field string, fields ...string) *User
 		if err := ummq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		return ummq.sqlQuery(), nil
+		return ummq.sqlQuery(ctx), nil
 	}
 	return group
 }
@@ -415,7 +415,8 @@ func (ummq *UserMonthMessageQuery) sqlAll(ctx context.Context) ([]*UserMonthMess
 		ids := make([]uuid.UUID, 0, len(nodes))
 		nodeids := make(map[uuid.UUID][]*UserMonthMessage)
 		for i := range nodes {
-			if fk := nodes[i].provider_id; fk != nil {
+			fk := nodes[i].provider_id
+			if fk != nil {
 				ids = append(ids, *fk)
 				nodeids[*fk] = append(nodeids[*fk], nodes[i])
 			}
@@ -440,7 +441,8 @@ func (ummq *UserMonthMessageQuery) sqlAll(ctx context.Context) ([]*UserMonthMess
 		ids := make([]uuid.UUID, 0, len(nodes))
 		nodeids := make(map[uuid.UUID][]*UserMonthMessage)
 		for i := range nodes {
-			if fk := nodes[i].user_id; fk != nil {
+			fk := nodes[i].user_id
+			if fk != nil {
 				ids = append(ids, *fk)
 				nodeids[*fk] = append(nodeids[*fk], nodes[i])
 			}
@@ -472,7 +474,7 @@ func (ummq *UserMonthMessageQuery) sqlCount(ctx context.Context) (int, error) {
 func (ummq *UserMonthMessageQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := ummq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -522,7 +524,7 @@ func (ummq *UserMonthMessageQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (ummq *UserMonthMessageQuery) sqlQuery() *sql.Selector {
+func (ummq *UserMonthMessageQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(ummq.driver.Dialect())
 	t1 := builder.Table(usermonthmessage.Table)
 	selector := builder.Select(t1.Columns(usermonthmessage.Columns...)...).From(t1)
@@ -817,7 +819,7 @@ func (umms *UserMonthMessageSelect) Scan(ctx context.Context, v interface{}) err
 	if err := umms.prepareQuery(ctx); err != nil {
 		return err
 	}
-	umms.sql = umms.UserMonthMessageQuery.sqlQuery()
+	umms.sql = umms.UserMonthMessageQuery.sqlQuery(ctx)
 	return umms.sqlScan(ctx, v)
 }
 

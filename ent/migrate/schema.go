@@ -3,8 +3,8 @@
 package migrate
 
 import (
-	"github.com/facebook/ent/dialect/sql/schema"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/schema"
+	"entgo.io/ent/schema/field"
 )
 
 var (
@@ -30,16 +30,14 @@ var (
 		PrimaryKey: []*schema.Column{MessagesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "messages_provides_messages",
-				Columns: []*schema.Column{MessagesColumns[10]},
-
+				Symbol:     "messages_provides_messages",
+				Columns:    []*schema.Column{MessagesColumns[10]},
 				RefColumns: []*schema.Column{ProvidesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "messages_users_messages",
-				Columns: []*schema.Column{MessagesColumns[11]},
-
+				Symbol:     "messages_users_messages",
+				Columns:    []*schema.Column{MessagesColumns[11]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -50,7 +48,7 @@ var (
 		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "min", Type: field.TypeInt32},
 		{Name: "max", Type: field.TypeInt32},
-		{Name: "price", Type: field.TypeInt16, Unique: true},
+		{Name: "price", Type: field.TypeFloat64, Unique: true},
 		{Name: "create_at", Type: field.TypeTime},
 		{Name: "update_at", Type: field.TypeTime},
 	}
@@ -105,16 +103,14 @@ var (
 		PrimaryKey: []*schema.Column{RatePricesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "rate_prices_prices_price_id",
-				Columns: []*schema.Column{RatePricesColumns[3]},
-
+				Symbol:     "rate_prices_prices_price_id",
+				Columns:    []*schema.Column{RatePricesColumns[3]},
 				RefColumns: []*schema.Column{PricesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "rate_prices_rates_rate_id",
-				Columns: []*schema.Column{RatePricesColumns[4]},
-
+				Symbol:     "rate_prices_rates_rate_id",
+				Columns:    []*schema.Column{RatePricesColumns[4]},
 				RefColumns: []*schema.Column{RatesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -123,7 +119,8 @@ var (
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
-		{Name: "balance", Type: field.TypeInt16},
+		{Name: "balance", Type: field.TypeFloat64, Default: 0},
+		{Name: "count", Type: field.TypeInt32, Default: 0},
 		{Name: "create_at", Type: field.TypeTime},
 		{Name: "update_at", Type: field.TypeTime},
 		{Name: "rate_id", Type: field.TypeUUID, Nullable: true},
@@ -135,9 +132,8 @@ var (
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "users_rate_prices_user",
-				Columns: []*schema.Column{UsersColumns[4]},
-
+				Symbol:     "users_rate_prices_user",
+				Columns:    []*schema.Column{UsersColumns[5]},
 				RefColumns: []*schema.Column{RatePricesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -159,16 +155,14 @@ var (
 		PrimaryKey: []*schema.Column{UserMonthMessagesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "user_month_messages_provides_provider_id",
-				Columns: []*schema.Column{UserMonthMessagesColumns[4]},
-
+				Symbol:     "user_month_messages_provides_provider_id",
+				Columns:    []*schema.Column{UserMonthMessagesColumns[4]},
 				RefColumns: []*schema.Column{ProvidesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "user_month_messages_users_user_messages",
-				Columns: []*schema.Column{UserMonthMessagesColumns[5]},
-
+				Symbol:     "user_month_messages_users_user_messages",
+				Columns:    []*schema.Column{UserMonthMessagesColumns[5]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

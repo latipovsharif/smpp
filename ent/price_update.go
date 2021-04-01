@@ -10,9 +10,9 @@ import (
 	"smpp/ent/rateprice"
 	"time"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 )
 
@@ -56,15 +56,15 @@ func (pu *PriceUpdate) AddMax(i int32) *PriceUpdate {
 }
 
 // SetPrice sets the "price" field.
-func (pu *PriceUpdate) SetPrice(i int16) *PriceUpdate {
+func (pu *PriceUpdate) SetPrice(f float64) *PriceUpdate {
 	pu.mutation.ResetPrice()
-	pu.mutation.SetPrice(i)
+	pu.mutation.SetPrice(f)
 	return pu
 }
 
-// AddPrice adds i to the "price" field.
-func (pu *PriceUpdate) AddPrice(i int16) *PriceUpdate {
-	pu.mutation.AddPrice(i)
+// AddPrice adds f to the "price" field.
+func (pu *PriceUpdate) AddPrice(f float64) *PriceUpdate {
+	pu.mutation.AddPrice(f)
 	return pu
 }
 
@@ -236,14 +236,14 @@ func (pu *PriceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := pu.mutation.Price(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt16,
+			Type:   field.TypeFloat64,
 			Value:  value,
 			Column: price.FieldPrice,
 		})
 	}
 	if value, ok := pu.mutation.AddedPrice(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt16,
+			Type:   field.TypeFloat64,
 			Value:  value,
 			Column: price.FieldPrice,
 		})
@@ -361,15 +361,15 @@ func (puo *PriceUpdateOne) AddMax(i int32) *PriceUpdateOne {
 }
 
 // SetPrice sets the "price" field.
-func (puo *PriceUpdateOne) SetPrice(i int16) *PriceUpdateOne {
+func (puo *PriceUpdateOne) SetPrice(f float64) *PriceUpdateOne {
 	puo.mutation.ResetPrice()
-	puo.mutation.SetPrice(i)
+	puo.mutation.SetPrice(f)
 	return puo
 }
 
-// AddPrice adds i to the "price" field.
-func (puo *PriceUpdateOne) AddPrice(i int16) *PriceUpdateOne {
-	puo.mutation.AddPrice(i)
+// AddPrice adds f to the "price" field.
+func (puo *PriceUpdateOne) AddPrice(f float64) *PriceUpdateOne {
+	puo.mutation.AddPrice(f)
 	return puo
 }
 
@@ -509,6 +509,13 @@ func (puo *PriceUpdateOne) sqlSave(ctx context.Context) (_node *Price, err error
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Price.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if ps := puo.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
 	if value, ok := puo.mutation.Min(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt32,
@@ -539,14 +546,14 @@ func (puo *PriceUpdateOne) sqlSave(ctx context.Context) (_node *Price, err error
 	}
 	if value, ok := puo.mutation.Price(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt16,
+			Type:   field.TypeFloat64,
 			Value:  value,
 			Column: price.FieldPrice,
 		})
 	}
 	if value, ok := puo.mutation.AddedPrice(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt16,
+			Type:   field.TypeFloat64,
 			Value:  value,
 			Column: price.FieldPrice,
 		})

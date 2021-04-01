@@ -39,7 +39,7 @@ func (s *Session) SendingMessage(c chan<- ent.Messages, cache *CacheMap) {
 			}
 			bulk := make([]*ent.MessagesCreate, len(listMessage))
 			s.db.Messages.CreateBulk(bulk...).Save(ctx)
-			if count != 0 {
+			if count > 0 {
 				s.db.User.Update().Where(user.ID(uuid)).SetCount(count).Save(ctx)
 			}
 			delete(cache.Hmap, uuid)

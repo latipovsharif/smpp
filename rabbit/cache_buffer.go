@@ -28,7 +28,7 @@ func (s *Session) SendingMessage(c chan<- ent.Messages, cache *CacheMap) {
 			balans, price, count := s.chekBalans(ctx, uuid)
 			fmt.Println("Count |||||||", count)
 			for _, v1 := range v {
-				if balans-(price*float64(count)) > 0 && balans != 0.0 {
+				if balans-(price*float64(count)) > 0 && balans > 0.0 {
 					v1.State = int(StateNew)
 					count++
 					c <- v1
@@ -63,6 +63,7 @@ func (s *Session) chekBalans(ctx context.Context, userID uuid.UUID) (float64, fl
 		Where(price.MinLTE(usr.Count), price.MaxGT(usr.Count)).
 		First(ctx)
 	if err != nil {
+		log.Errorf("cannot select Price %v", err)
 		return 0, 0, 0
 	} else if usr.Balance >= messagePrice.Price {
 		return usr.Balance, messagePrice.Price, usr.Count

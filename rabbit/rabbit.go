@@ -67,7 +67,7 @@ func NewSession(db *ent.Client) (*Session, *CacheMap, error) {
 }
 
 // Consume start consuming from SMSChannel
-func (s *Session) Consume(c chan<- ent.Messages, cacheMap *CacheMap) {
+func (s *Session) Consume(cacheMap *CacheMap) {
 	msgs, err := s.channel.Consume(
 		s.queue.Name, // queue
 		SMSConsumer,  // consumer
@@ -81,9 +81,11 @@ func (s *Session) Consume(c chan<- ent.Messages, cacheMap *CacheMap) {
 	if err != nil {
 		log.Fatalf("cannot consume from channel %v", err)
 	}
+	//lint:ignore SA4006 this value of listMessage is never used
+	listMessage := []ent.Messages{}
+	message := &ent.Messages{}
 	for d := range msgs {
-		message := ent.Messages{}
-		if err = json.Unmarshal(d.Body, &message); err != nil {
+		if err = json.Unmarshal(d.Body, message); err != nil {
 			log.Errorf("cannot unmarshal message: %v", err)
 			if err := d.Nack(false, true); err != nil {
 				log.Errorf("cannot nack message: %v", err)
@@ -92,14 +94,14 @@ func (s *Session) Consume(c chan<- ent.Messages, cacheMap *CacheMap) {
 		}
 		if err = d.Ack(false); err != nil {
 			log.Error("cannot ack message")
+			continue
 		}
 		cacheMap.Mutex.RLock()
-		arrMes := cacheMap.Hmap[message.UserId]
-		arrMes = append(arrMes, message)
-		cacheMap.Hmap[message.UserId] = arrMes
+		listMessage = cacheMap.Hmap[message.UserId]
+		listMessage = append(listMessage, *message)
+		cacheMap.Hmap[message.UserId] = listMessage
 		cacheMap.Mutex.RUnlock()
 	}
-
 	<-s.done
 }
 

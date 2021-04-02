@@ -50,7 +50,7 @@ func main() {
 	}
 
 	go s.SendAndReceiveSMS()
-	go rs.Consume(messages, cacheMap)
+	go rs.Consume(cacheMap)
 	go s.SubmitSM(messages)
 	go rs.SendingMessage(messages, cacheMap)
 

@@ -68,7 +68,7 @@ func (s *Session) SendingMessage(c chan<- ent.Messages, cache *CacheMap) {
 
 func (s *Session) chekBalans(ctx context.Context, userID uuid.UUID, countMessge int) (float64, float64, int32) {
 	usr, err := s.db.User.Query().
-		Where(user.IDEQ(userID)).
+		Where(user.ID(userID)).
 		First(ctx)
 	if err != nil {
 		log.Errorf("cannot select User %v", err)

@@ -18,11 +18,19 @@ type CacheMap struct {
 	Mutex *sync.RWMutex
 }
 
+type UserMessage struct {
+	IDUser     uuid.UUID
+	IDProvider uuid.UUID
+}
+
 func (s *Session) SendingMessage(c chan<- ent.Messages, cache *CacheMap) {
 	ctx := context.Background()
 	listMessage := []ent.Messages{}
-	//lint:ignore SA4006 this value of listMessage is never used
-	bulk := make([]*ent.MessagesCreate, len(listMessage))
+	listUserMessage := []UserMessage{}
+	//lint:ignore SA4006 this value
+	bulkMessages := make([]*ent.MessagesCreate, len(listMessage))
+	//lint:ignore SA4006 this value
+	bulkMonthMessage := make([]*ent.UserMonthMessageCreate, len(listUserMessage))
 	for {
 		cache.Mutex.Lock()
 		for uuid, v := range cache.Hmap {
@@ -37,9 +45,9 @@ func (s *Session) SendingMessage(c chan<- ent.Messages, cache *CacheMap) {
 				}
 				listMessage = append(listMessage, v1)
 			}
-			bulk = make([]*ent.MessagesCreate, len(listMessage))
+			bulkMessages = make([]*ent.MessagesCreate, len(listMessage))
 			for index, message := range listMessage {
-				bulk[index] = s.db.Messages.Create().
+				bulkMessages[index] = s.db.Messages.Create().
 					SetSequenceNumber(message.SequenceNumber).
 					SetExternalID(message.ExternalID).
 					SetDst(message.Dst).
@@ -49,8 +57,12 @@ func (s *Session) SendingMessage(c chan<- ent.Messages, cache *CacheMap) {
 					SetSmscMessageID(message.SmscMessageID).
 					SetProviderIDID(message.ProviderId).
 					SetUserIDID(message.UserId)
+				listUserMessage = append(listUserMessage, UserMessage{
+					IDUser:     message.UserId,
+					IDProvider: message.ProviderId,
+				})
 			}
-			_, err := s.db.Messages.CreateBulk(bulk...).Save(ctx)
+			_, err := s.db.Messages.CreateBulk(bulkMessages...).Save(ctx)
 			if err != nil {
 				log.Errorf("cannot creat Messages %v", err)
 			}
@@ -59,6 +71,19 @@ func (s *Session) SendingMessage(c chan<- ent.Messages, cache *CacheMap) {
 			}
 			delete(cache.Hmap, uuid)
 			listMessage = nil
+		}
+		if listUserMessage != nil {
+			bulkMonthMessage = make([]*ent.UserMonthMessageCreate, len(listUserMessage))
+			for index, v := range listUserMessage {
+				bulkMonthMessage[index] = s.db.UserMonthMessage.Create().
+					SetProviderIDID(v.IDProvider).
+					SetUserIDID(v.IDUser)
+			}
+			_, err := s.db.UserMonthMessage.CreateBulk(bulkMonthMessage...).Save(ctx)
+			if err != nil {
+				log.Errorf("cannot creat UserMonthMessage %v", err)
+			}
+			listUserMessage = nil
 		}
 		cache.Mutex.Unlock()
 		time.Sleep(1 * time.Second)

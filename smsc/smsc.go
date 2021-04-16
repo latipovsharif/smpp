@@ -1,13 +1,15 @@
 package smsc
 
 import (
+	"context"
 	"os"
+	"smpp/ent"
+	"smpp/ent/messages"
 	"smpp/rabbit"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/go-pg/pg/v9"
 	"github.com/linxGnu/gosmpp"
 	"github.com/linxGnu/gosmpp/data"
 	"github.com/linxGnu/gosmpp/pdu"
@@ -17,11 +19,11 @@ import (
 type Session struct {
 	trans *gosmpp.TransceiverSession
 	c     chan *pdu.SubmitSM
-	db    *pg.DB
+	db    *ent.Client
 }
 
 // NewSession returns new session object
-func NewSession(db *pg.DB) *Session {
+func NewSession(db *ent.Client) *Session {
 	auth := gosmpp.Auth{
 		SMSC:       os.Getenv("SMSC_HOST"),     // "127.0.0.1:2775",
 		SystemID:   os.Getenv("SMSC_LOGIN"),    // "522241",
@@ -70,13 +72,16 @@ func (s *Session) SendAndReceiveSMS() {
 	}
 }
 
-func handlePDU(db *pg.DB) func(pdu.PDU, bool) {
+func handlePDU(db *ent.Client) func(pdu.PDU, bool) {
 	return func(p pdu.PDU, responded bool) {
+		ctx := context.Background()
 		switch pd := p.(type) {
 		case *pdu.SubmitSMResp:
-			if _, err := db.Model((*rabbit.Message)(nil)).
-				Set("smsc_message_id = ?, state = ?, last_updated_date = ?", pd.MessageID, rabbit.StateDelivered, time.Now()).
-				Where("id = ?", pd.GetSequenceNumber()).Update(); err != nil {
+			if _, err := db.Messages.Update().
+				Where(messages.SequenceNumber(pd.SequenceNumber)).
+				SetState(int(rabbit.StateDelivered)).
+				SetSmscMessageID(pd.MessageID).
+				Save(ctx); err != nil {
 				log.Errorf("cannot update message: %v", err)
 			}
 		case *pdu.GenerickNack:
@@ -102,7 +107,7 @@ func handlePDU(db *pg.DB) func(pdu.PDU, bool) {
 }
 
 // SubmitSM submit new short message
-func (s *Session) SubmitSM(c <-chan rabbit.Message) {
+func (s *Session) SubmitSM(c <-chan ent.Messages) {
 	for m := range c {
 		srcAddr := pdu.NewAddress()
 		srcAddr.SetTon(5)
@@ -118,11 +123,12 @@ func (s *Session) SubmitSM(c <-chan rabbit.Message) {
 		submitSM.SourceAddr = srcAddr
 		submitSM.DestAddr = destAddr
 		_ = submitSM.Message.SetMessageWithEncoding(m.Message, data.UCS2)
+
 		submitSM.ProtocolID = 0
 		submitSM.RegisteredDelivery = 1
 		submitSM.ReplaceIfPresentFlag = 0
 		submitSM.EsmClass = 0
-		submitSM.SetSequenceNumber(m.ID)
+		submitSM.SetSequenceNumber(m.SequenceNumber)
 		s.c <- submitSM
 	}
 }

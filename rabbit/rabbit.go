@@ -2,10 +2,13 @@ package rabbit
 
 import (
 	"encoding/json"
+	"os"
+	"smpp/ent"
+	"sync"
 
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/go-pg/pg/v9"
 	"github.com/pkg/errors"
 	"github.com/streadway/amqp"
 )
@@ -22,22 +25,23 @@ type Session struct {
 	queue      amqp.Queue
 	channel    *amqp.Channel
 	done       chan bool
-	db         *pg.DB
+	db         *ent.Client
 }
 
 // NewSession return new rabbitmq session
-func NewSession(db *pg.DB) (*Session, error) {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+func NewSession(db *ent.Client) (*Session, *CacheMap, error) {
+	urlAmqp := os.Getenv("RABBITMQ_HOST")
+	conn, err := amqp.Dial(urlAmqp)
 	if err != nil {
-		return nil, errors.Wrap(err, "cannot connect to rabbitmq")
+		return nil, nil, errors.Wrap(err, "cannot connect to rabbitmq")
 	}
 
 	ch, err := conn.Channel()
 	if err != nil {
-		return nil, errors.Wrap(err, "cannot create new channel")
+		return nil, nil, errors.Wrap(err, "cannot create new channel")
 	}
 
-	q, err := ch.QueueDeclare(
+	q, _ := ch.QueueDeclare(
 		SMSChannel, // name
 		true,       // durable
 		false,      // delete when unused
@@ -54,11 +58,16 @@ func NewSession(db *pg.DB) (*Session, error) {
 		db:         db,
 	}
 
-	return s, nil
+	cacheMap := &CacheMap{
+		Hmap:  map[uuid.UUID][]ent.Messages{},
+		Mutex: &sync.RWMutex{},
+	}
+
+	return s, cacheMap, nil
 }
 
 // Consume start consuming from SMSChannel
-func (s *Session) Consume(c chan<- Message) {
+func (s *Session) Consume(c chan<- ent.Messages, cacheMap *CacheMap) {
 	msgs, err := s.channel.Consume(
 		s.queue.Name, // queue
 		SMSConsumer,  // consumer
@@ -72,29 +81,25 @@ func (s *Session) Consume(c chan<- Message) {
 	if err != nil {
 		log.Fatalf("cannot consume from channel %v", err)
 	}
-
 	for d := range msgs {
-		message := Message{}
-		if err := json.Unmarshal(d.Body, &message); err != nil {
+		message := ent.Messages{}
+		if err = json.Unmarshal(d.Body, &message); err != nil {
 			log.Errorf("cannot unmarshal message: %v", err)
 			if err := d.Nack(false, true); err != nil {
 				log.Errorf("cannot nack message: %v", err)
 			}
+			continue
 		}
-
-		message.State = StateNew
-
-		if _, err := s.db.Model(&message).Insert(); err != nil {
-			log.Errorf("cannot insert message: %v", err)
-			d.Nack(false, true)
-		}
-
-		if err := d.Ack(false); err != nil {
+		if err = d.Ack(false); err != nil {
 			log.Error("cannot ack message")
 		}
-
-		c <- message
+		cacheMap.Mutex.RLock()
+		arrMes := cacheMap.Hmap[message.UserId]
+		arrMes = append(arrMes, message)
+		cacheMap.Hmap[message.UserId] = arrMes
+		cacheMap.Mutex.RUnlock()
 	}
+
 	<-s.done
 }
 
@@ -104,3 +109,11 @@ func (s *Session) Close() {
 	s.connection.Close()
 	s.done <- true
 }
+
+// func (s *Session) createUserMessage(ctx context.Context, userID uuid.UUID, providerID uuid.UUID) {
+// 	if _, err := s.db.UserMonthMessage.Create().
+// 		SetUserIDID(userID).
+// 		SetProviderIDID(providerID).Save(ctx); err != nil {
+// 		log.Errorf("cannot insert User Month Message: %v", err)
+// 	}
+// }

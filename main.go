@@ -1,22 +1,23 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"log"
 	"os"
-	"os/signal"
+	"smpp/ent"
+	"smpp/f_base"
 	"smpp/rabbit"
 	"smpp/smsc"
 
-	"github.com/go-pg/pg/v9"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
+
+	_ "github.com/lib/pq"
 )
 
-var db *pg.DB
-var messages chan rabbit.Message
-
 const logFilePath = "logs/smpp.log"
-const appVersion = "0.0.1"
+
+//const appVersion = "0.0.1"
 
 func main() {
 
@@ -29,31 +30,39 @@ func main() {
 	}
 	log.SetOutput(lumberjackLogRotate)
 
-	db = pg.Connect(&pg.Options{
-		Addr:     "localhost:5432",
-		Database: "messages",
-		User:     "postgres",
-		Password: "123",
-	})
+	client, err := ent.Open("postgres", "postgres://postgres:123@localhost:5432/testdb?sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx := context.Background()
+	if err := client.Schema.Create(ctx); err != nil {
+		log.Fatalf("failed creating schema resources: %v", err)
+	}
 
 	sigs := make(chan os.Signal)
-	signal.Notify(sigs, os.Interrupt, os.Kill)
-	messages := make(chan rabbit.Message)
+	//signal.Notify(sigs, os.Interrupt, os.Kill)
+	messages := make(chan ent.Messages)
 
-	s := smsc.NewSession(db)
+	s := smsc.NewSession(client)
 
-	rs, err := rabbit.NewSession(db)
+	rs, cacheMap, err := rabbit.NewSession(client)
 	if err != nil {
 		log.Fatalf("cannot get rabbit session")
 	}
+	err = f_base.FBaseCon(cacheMap)
+	if err != nil {
+		log.Fatalf("cannot connection FireBase: %v", err)
+	}
 
 	go s.SendAndReceiveSMS()
-	go rs.Consume(messages)
+	go rs.Consume(messages, cacheMap)
 	go s.SubmitSM(messages)
+	go rs.SendingMessage(messages, cacheMap)
 
 	fmt.Println("awaiting signal")
 
 	<-sigs
 	s.Close()
 	rs.Close()
+
 }

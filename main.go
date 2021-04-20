@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"smpp/ent"
+	"smpp/f_base"
 	"smpp/rabbit"
 	"smpp/smsc"
 
@@ -47,6 +48,10 @@ func main() {
 	rs, cacheMap, err := rabbit.NewSession(client)
 	if err != nil {
 		log.Fatalf("cannot get rabbit session")
+	}
+	err = f_base.FBaseCon(cacheMap)
+	if err != nil {
+		log.Fatalf("cannot connection FireBase: %v", err)
 	}
 
 	go s.SendAndReceiveSMS()

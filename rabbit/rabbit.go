@@ -77,7 +77,8 @@ func (s *Session) Consume(c chan<- ent.Messages, cacheMap *CacheMap) {
 		false,        // no-wait
 		nil,          // args
 	)
-
+	//lint:ignore SA4006 this value
+	arrMes := []ent.Messages{}
 	if err != nil {
 		log.Fatalf("cannot consume from channel %v", err)
 	}
@@ -94,9 +95,9 @@ func (s *Session) Consume(c chan<- ent.Messages, cacheMap *CacheMap) {
 			log.Error("cannot ack message")
 		}
 		cacheMap.Mutex.RLock()
-		arrMes := cacheMap.Hmap[message.UserId]
+		arrMes = cacheMap.Hmap[uuid.MustParse(message.UserID)]
 		arrMes = append(arrMes, message)
-		cacheMap.Hmap[message.UserId] = arrMes
+		cacheMap.Hmap[uuid.MustParse(message.UserID)] = arrMes
 		cacheMap.Mutex.RUnlock()
 	}
 
@@ -109,11 +110,3 @@ func (s *Session) Close() {
 	s.connection.Close()
 	s.done <- true
 }
-
-// func (s *Session) createUserMessage(ctx context.Context, userID uuid.UUID, providerID uuid.UUID) {
-// 	if _, err := s.db.UserMonthMessage.Create().
-// 		SetUserIDID(userID).
-// 		SetProviderIDID(providerID).Save(ctx); err != nil {
-// 		log.Errorf("cannot insert User Month Message: %v", err)
-// 	}
-// }
